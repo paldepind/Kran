@@ -1,5 +1,7 @@
 var chai = require("chai")
-  , should = chai.should()
-  , sinonChai = require("sinon-chai")
 
+var sinonChai = require("sinon-chai")
 chai.use(sinonChai)
+
+global.chai = chai
+global.should = chai.should()
