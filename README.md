@@ -1,4 +1,4 @@
-kran
+Kran
 ====
 
-An entity component system - work in progress
+An entity component system written in JavaScript - work in progress

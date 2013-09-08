@@ -1,6 +1,7 @@
-var chai = require("chai")
+global.sinon = require('sinon')
 
-var sinonChai = require("sinon-chai")
+var chai = require('chai')
+var sinonChai = require('sinon-chai')
 chai.use(sinonChai)
 
 global.chai = chai
