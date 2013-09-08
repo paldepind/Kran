@@ -12,11 +12,16 @@ describe 'component', ->
     func1 = () -> this.x = 1
     func2 = () -> this.y = 2
 
-    comp1 = component.new(func1)
-    comp2 = component.new(func2)
+    comp2 = component.new(func1)
+    comp3 = component.new(func2)
 
-    component[comp1].should.equal func1
-    component[comp2].should.equal func2
+    component[comp2].should.equal func1
+    component[comp3].should.equal func2
+
+  it 'sould delegate incrementing ids to component', ->
+    comp.should.equal 0
+    comp2.should.equal 1
+    comp3.should.equal 2
 
   it 'can be instantiated', ->
     foo = new component[comp]()
