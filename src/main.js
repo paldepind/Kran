@@ -1,0 +1,3 @@
+linkedList = require('./linkedlist')
+
+
