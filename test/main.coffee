@@ -1,10 +1,10 @@
-require '../src/main'
+component = require( '../src/main').component
 
 describe 'component', ->
-  comp = null
+  comp = comp2 = comp3 = null
 
-  it 'is be possible to add components', ->
-    comp = component.new( ->
+  it 'makes it possible to add components', ->
+    comp = component.add( ->
       this.bar = 17
     )
 
@@ -12,8 +12,8 @@ describe 'component', ->
     func1 = () -> this.x = 1
     func2 = () -> this.y = 2
 
-    comp2 = component.new(func1)
-    comp3 = component.new(func2)
+    comp2 = component.add(func1)
+    comp3 = component.add(func2)
 
     component[comp2].should.equal func1
     component[comp3].should.equal func2
