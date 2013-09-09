@@ -1,7 +1,7 @@
 Llist = require '../src/linkedlist'
 util = require 'util'
 
-describe 'Linked list', ->
+describe 'linked list', ->
   list = null 
 
   beforeEach ->
@@ -52,27 +52,32 @@ describe 'Linked list', ->
   it 'should point to the first added element', ->
     el = list.add()
     list.add()
+    list.head.should.equal(el)
+
+  it 'have both tail and head points to the same when there is only one', ->
+    el = list.add()
+    list.head.should.equal(el)
     list.tail.should.equal(el)
 
   it 'should still point to first element after removals', ->
     el1 = list.add()
     el2 = list.add()
-    list.tail.should.equal(el1)
+    list.head.should.equal(el1)
     el1.remove()
-    list.tail.should.equal(el2)
+    list.head.should.equal(el2)
     el2.remove()
-    should.not.exist(list.tail)
+    should.not.exist(list.head)
 
   it 'should point to the last added element', ->
     list.add()
     el = list.add()
-    list.head.should.equal(el)
+    list.tail.should.equal(el)
 
   it 'should still point to last element after removals', ->
     el1 = list.add()
     el2 = list.add()
-    list.head.should.equal(el2)
+    list.tail.should.equal(el2)
     el2.remove()
-    list.head.should.equal(el1)
+    list.tail.should.equal(el1)
     el1.remove()
-    should.not.exist(list.head)
+    should.not.exist(list.tail)

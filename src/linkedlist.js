@@ -6,7 +6,7 @@ function LinkedList() {
 function Element(data, list) {
   this.data = data
   this.list = list 
-  this.prev = list.head
+  this.prev = list.tail
   this.next = null
 }
 
@@ -14,24 +14,23 @@ Element.prototype.remove = function() {
   if (this.prev) {
     this.prev.next = this.next
   } else {
-    this.list.tail = this.next
+    this.list.head = this.next
   }
   if (this.next) {
     this.next.prev = this.prev
   } else {
-    this.list.head = this.prev
+    this.list.tail = this.prev
   }
 }
 
 LinkedList.prototype.add = function(data) {
   var elm = new Element(data, this)
-  if (this.head) {
-    this.head.next = elm
+  if (this.tail) {
+    this.tail.next = elm
   } else {
-    this.tail = elm
+    this.head = elm
   }
-  this.head = elm
-
+  this.tail = elm
   return elm
 }
 

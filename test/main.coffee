@@ -1,63 +1,106 @@
 component = require( '../src/main').component
 system = require( '../src/main').system
+entity = require( '../src/main').entity
 
-describe 'component', ->
-  comp = comp2 = comp3 = null
+describe 'Kran:', ->
 
-  it 'makes it possible to add components', ->
-    comp = component.add( ->
-      this.bar = 17
-    )
+  afterEach ->
+    component.length = 0
+    system.length = 0
+    entity.length = 0
 
-  it 'stores all components and their constructor function', ->
-    func1 = () -> this.x = 1
-    func2 = () -> this.y = 2
+  describe 'component', ->
 
-    comp2 = component.add(func1)
-    comp3 = component.add(func2)
+    comp = null
 
-    component[comp2].should.equal func1
-    component[comp3].should.equal func2
+    beforeEach ->
+      comp = component.new( -> @bar = 17 )
 
-  it 'sould delegate incrementing ids to component', ->
-    comp.should.equal 0
-    comp2.should.equal 1
-    comp3.should.equal 2
+    it 'stores all components and their constructor function', ->
+      func1 = () -> @x = 1
+      func2 = () -> @y = 2
 
-  it 'can be instantiated', ->
-    foo = new component[comp]()
-    foo.bar.should.equal 17
+      comp1 = component.new(func1)
+      comp2 = component.new(func2)
 
-describe 'system', ->
-  it 'makes it opssible to add systems', ->
-    sys = system.add({})
-    sys.should.equal 0
-    sys = system.add({})
-    sys.should.equal 1
+      component[comp1].should.equal func1
+      component[comp2].should.equal func2
 
-  it 'can run systems', () ->
-    spy = sinon.spy()
-    spy()
-    spy.should.have.been.called
-    sys = system.add({ pre: spy })
-    system.run(sys)
+    it 'should delegate incrementing ids to component', ->
+      comp2 = component.new(() -> foo)
+      comp3 = component.new(() -> foo)
+      comp.should.equal 0
+      comp2.should.equal 1
+      comp3.should.equal 2
 
-  it 'can run all systems at once', ->
-    spy = sinon.spy()
-    system.add { pre: spy }
-    system.add { post: spy }
-    system.runAll()
-    spy.should.have.been.calledTwice
+    it 'can be instantiated', ->
+      foo = new component[comp]()
+      foo.bar.should.equal 17
 
-  it 'seperates systems into groups', ->
-    spy = sinon.spy()
-    spy2 = sinon.spy()
-    system.add { pre: spy }
-    system.add { pre: spy2, group: 'thsBgrp' }
-    system.add { pre: spy2, group: 'thsBgrp' }
+    it 'keeps track of which systems includes it', ->
+      comp2 = component.new(() -> foo)
+      comp3 = component.new(() -> foo)
+      sys = system.new({
+        components: [comp, comp3]
+      })
+      component[comp].belongsTo[0].should.equal(sys)
+      component[comp3].belongsTo[0].should.equal(sys)
+      component[comp2].belongsTo.length.should.equal(0)
 
-    system.runAll()
-    system.thsBgrp.run()
+    it 'handles a single non-array component', ->
+      sys = system.new({
+        components: comp
+      })
+      component[comp].belongsTo[0].should.equal(sys)
 
-    spy.should.have.been.calledOnce
-    spy2.callCount.should.equal 4
+  describe 'system', ->
+    it 'makes it possible to add new systems', ->
+      sys = system.new({})
+      sys.should.equal 0
+      sys = system.new({})
+      sys.should.equal 1
+
+    it 'can run systems', () ->
+      spy = sinon.spy()
+      spy()
+      spy.should.have.been.called
+      sys = system.new({ pre: spy })
+      system.run(sys)
+
+    it 'can run all systems at once', ->
+      spy = sinon.spy()
+      system.new { pre: spy }
+      system.new { post: spy }
+      system.runAll()
+      spy.should.have.been.calledTwice
+
+    it 'seperates systems into groups', ->
+      spy = sinon.spy()
+      spy2 = sinon.spy()
+      system.new { pre: spy }
+      system.new { pre: spy2, group: 'thsBgrp' }
+      system.new { pre: spy2, group: 'thsBgrp' }
+
+      system.runAll()
+      system.thsBgrp.run()
+
+      spy.should.have.been.calledOnce
+      spy2.callCount.should.equal 4
+
+  describe 'entity', ->
+    it 'allows for creation of new entities', ->
+      entity.new().should.equal 0
+      entity.new().should.equal 1
+      entity.new().should.equal 2
+
+    it 'can add components to entities', ->
+      spy = sinon.spy()
+      comp = component.new(() -> @v = 1)
+      sys = system.new {
+        components: [comp],
+        pre: spy
+      }
+      component[comp].belongsTo[0].should.equal(sys)
+      ent = entity.new()
+      entity[ent].add(comp)
+      system[sys].entities.head.data.should.equal ent
