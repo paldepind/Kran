@@ -1,4 +1,4 @@
-var linkedList = require('./linkedlist')
+var LinkedList = require('./linkedlist')
 
 // Component
 var component = []
@@ -14,7 +14,7 @@ var system = []
 
 system.new = function(props) {
   var id = this.length
-  props.entities = new linkedList()
+  props.entities = new LinkedList()
 
   if (props.group) {
     if (!this[props.group]) {
@@ -43,21 +43,19 @@ var runGroup = function() {
 
 system.run = function(sysId) {
   var sys = this[sysId],
-      entity,
+      ent,
       components
 
   callIfExists(sys.pre)
 
-  if ((entity = sys.entities.head) != null &&
-      sys.components) {
-    do {
-      var entityId = entity.data
+  if (sys.components) {
+    sys.entities.forEach(function (entityId) {
       components = [] // FIXME
       sys.components.forEach(function (compId) {
-        components.push(entity[entityId.data][compId])
+        components.push(entity[entityId][compId])
       })
       sys.every.apply(sys, components)
-    } while ((entity = entityId.next) != null)
+    })
   }
   
   callIfExists(sys.post)
@@ -76,29 +74,41 @@ var entity = []
 entity.new = function () {
   var id = this.length
   this.push(new Array(component.length))
+  this[id].id = id
   this[id].add = addComponent
-  this[id].qualifiesFor = qualifiesForSystem
-  return id
+  this[id].remove = removeComponent
+  this[id].belongsTo = new LinkedList
+  return this[id]
 }
 
 var addComponent = function(compId) {
-  that = this
-  this[compId] = component[compId]()
+  this[compId] = new component[compId]()
   component[compId].belongsTo.forEach(function (sysId) {
-    system[sysId].entities.add(sysId)
-    if (that.qualifiesFor(sysId)) {
-      system[sysId].entities.add(sysId)
+    if (qualifiesForSystem(this, sysId)) {
+      var sysEntry = system[sysId].entities.add(sysId)
+      this.belongsTo.add(sysEntry)
     }
-  })
+  }, this)
+  return this
 }
 
-var qualifiesForSystem = function (sysId) {
-  system[sysId].components.forEach(function (compId) {
-    if (!this[compId]) {
+var removeComponent = function(compId) {
+  this[compId] = undefined
+  this.belongsTo.forEach(function (sysEntry, elm) {
+    if (!qualifiesForSystem(this, sysEntry.data)) {
+      sysEntry.remove()
+      elm.remove()
+    }
+  }, this)
+}
+
+var qualifiesForSystem = function (entity, sysId) {
+  return system[sysId].components.every(function (compId) {
+    if (entity[compId] === undefined) {
       return false
     }
+    return true
   })
-  return true
 }
 
 // Helper functions

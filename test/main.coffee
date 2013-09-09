@@ -87,11 +87,20 @@ describe 'Kran:', ->
       spy.should.have.been.calledOnce
       spy2.callCount.should.equal 4
 
+    it 'calls the every function for every entity', ->
+      spy = sinon.spy()
+      comp = component.new(() -> @v = 1)
+      system.new { every: spy, components: comp }
+      entity.new().add(comp)
+      entity.new().add(comp)
+      system.runAll()
+      spy.should.have.been.calledTwice
+
   describe 'entity', ->
     it 'allows for creation of new entities', ->
-      entity.new().should.equal 0
-      entity.new().should.equal 1
-      entity.new().should.equal 2
+      entity.new().id.should.equal 0
+      entity.new().id.should.equal 1
+      entity.new().id.should.equal 2
 
     it 'can add components to entities', ->
       spy = sinon.spy()
@@ -102,5 +111,29 @@ describe 'Kran:', ->
       }
       component[comp].belongsTo[0].should.equal(sys)
       ent = entity.new()
-      entity[ent].add(comp)
-      system[sys].entities.head.data.should.equal ent
+      ent.add(comp)
+      system[sys].entities.head.data.should.equal ent.id
+
+    it 'adds entities to systems when they qualify', ->
+      comp = component.new(() -> @v = 1)
+      comp2 = component.new(() -> @v = 1)
+      comp3 = component.new(() -> @v = 1)
+      sys = system.new({ components: [comp, comp3] })
+
+      ent = entity.new().add(comp).add(comp2)
+      should.not.exist(ent.belongsTo.head)
+      ent.add(comp3)
+      should.exist(ent.belongsTo.head)
+
+    it 'allows removal of components and updates system accordingly', ->
+      comp = component.new(() -> @v = 1)
+      comp2 = component.new(() -> @v = 1)
+      comp3 = component.new(() -> @v = 1)
+      sys = system.new({ components: [comp, comp3] })
+
+      ent = entity.new().add(comp).add(comp2).add(comp3)
+      should.exist(ent.belongsTo.head)
+      ent.remove(comp2)
+      should.exist(ent.belongsTo.head)
+      ent.remove(comp)
+      should.not.exist(ent.belongsTo.head)
