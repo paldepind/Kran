@@ -1,5 +1,4 @@
-Llist = require '../src/linkedlist'
-util = require 'util'
+Llist = require('../src/main').LinkedList
 
 describe 'linked list', ->
   list = null 

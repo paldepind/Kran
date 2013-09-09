@@ -65,7 +65,7 @@ describe 'Kran:', ->
       spy()
       spy.should.have.been.called
       sys = system.new({ pre: spy })
-      system.run(sys)
+      system[sys].run()
 
     it 'can run all systems at once', ->
       spy = sinon.spy()
@@ -94,6 +94,26 @@ describe 'Kran:', ->
       entity.new().add(comp)
       entity.new().add(comp)
       system.runAll()
+      spy.should.have.been.calledTwice
+
+    it 'calls the every function with components as arguments', ->
+      func = (comp2, comp) ->
+        comp.v.should.equal 1
+        comp2.v.should.equal 2
+      comp = component.new(() -> @v = 1)
+      comp2 = component.new(() -> @v = 2)
+      system.new { every: func, components: [comp2, comp] }
+      entity.new().add(comp).add(comp2)
+      system.runAll()
+
+    it 'calls arrival and departure with proper components arguments', ->
+      spy = sinon.spy (comp, comp2) ->
+        comp2.v.should.equal 1
+        comp.v.should.equal 2
+      comp = component.new(() -> @v = 1)
+      comp2 = component.new(() -> @v = 2)
+      system.new { arrival: spy, departure: spy, components: [comp2, comp] }
+      entity.new().add(comp).add(comp2).remove(comp)
       spy.should.have.been.calledTwice
 
   describe 'entity', ->
