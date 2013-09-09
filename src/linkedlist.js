@@ -34,13 +34,13 @@ LinkedList.prototype.add = function(data) {
   return elm
 }
 
-LinkedList.prototype.forEach = function(func) {
+LinkedList.prototype.forEach = function(func, context) {
   var elm, nextElm = this.head
   
   while (nextElm != null) {
     elm = nextElm
     nextElm = elm.next
-    func(elm.data, elm)
+    func.call(context, elm.data, elm)
   }
 }
 
