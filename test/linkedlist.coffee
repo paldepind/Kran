@@ -81,3 +81,12 @@ describe 'linked list', ->
     list.tail.should.equal(el1)
     el1.remove()
     should.not.exist(list.tail)
+
+  it 'should allow for executing a function for every item', ->
+    el1 = list.add()
+    el2 = list.add()
+    el3 = list.add()
+    spy = sinon.spy()
+    
+    list.forEach(spy)
+    spy.should.have.been.calledThrice
