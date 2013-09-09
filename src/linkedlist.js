@@ -40,7 +40,7 @@ LinkedList.prototype.forEach = function(func) {
   while (nextElm != null) {
     elm = nextElm
     nextElm = elm.next
-    func(elm, elm.data)
+    func(elm.data, elm)
   }
 }
 
