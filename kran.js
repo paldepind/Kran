@@ -38,6 +38,7 @@
 
   system.new = function(props) {
     var id = this.length
+    var bufferLength = 0
     props.entities = new LinkedList()
     props.run = runSystem
 
@@ -46,15 +47,14 @@
       props.components.forEach(function (compId) {
         systemsRequieringComp[compId].push(id)
       })
-      props.compsBuffer = new Array(props.components.length)
+      bufferLength += props.components.length
     }
     if (props.on) {
       props.on = wrapInArray(props.on)
       props.on.forEach(function (event) {
-        window.addEventListener(event, function() {
-          runSystem.call(props)
-        })
+        window.addEventListener(event, props.run.bind(props))
       })
+      bufferLength += props.on.length
     } else {
       if (props.group) {
         if (!this[props.group]) {
@@ -64,26 +64,31 @@
       }
       this.all.push(id)
     }
+    props.compsBuffer = new Array(bufferLength)
     this.push(props)
     return id
   }
 
-  var runSystem = function() {
-    callIfExists(this.pre) // Call pre
-
-    if (typeof(this.every) === 'function') {
+  var runSystem = function(ev) {
+    if (isFunc(this.pre)) { // Call pre
+      this.pre(ev)
+    }
+    if (isFunc(this.every)) {
       this.entities.forEach(function (entId) { // Call every
         callFuncWithCompsFromEnt(this.components, this.compsBuffer,
-                                 entity[entId], this.every)
+                                 entity[entId], this.every, ev)
       }, this)
     }
-    
-    callIfExists(this.post) // Call post
+    if (isFunc(this.post)) { // Call post
+      this.post(ev)
+    }
   }
 
-  var callFuncWithCompsFromEnt = function(comps, buffer, ent, func) {
+  var callFuncWithCompsFromEnt = function(comps, buffer, ent, func, ev) {
+    if (ev)
+      buffer[0] = ev
     for (var i = 0; i < comps.length; i++) {
-      buffer[i] = ent[comps[i]]
+      buffer[i + (ev ? 1 : 0)] = ent[comps[i]]
     }
     func.apply(ent, buffer)
   }
@@ -165,6 +170,14 @@
   var callIfExists = function(func) {
     if (typeof func == "function") {
       func()
+    }
+  }
+
+  var isFunc = function(func) {
+    if (typeof(func) === 'function') {
+      return true
+    } else {
+      return false
     }
   }
 
