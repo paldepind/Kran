@@ -4,6 +4,7 @@
 
   // ***********************************************
   // Component
+  //
   var component = Kran.component = []
 
   component.new = function(constr) {
@@ -14,6 +15,7 @@
 
   // ***********************************************
   // System
+  //
   var system = Kran.system = []
 
   system.new = function(props) {
@@ -70,7 +72,7 @@
 
   // ***********************************************
   // Entity
-
+  //
   var entity = Kran.entity = []
 
   entity.new = function () {
@@ -83,11 +85,11 @@
     return this[id]
   }
 
-  var addComponent = function(compId) {
+  var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6) {
     var sysEntry, sys
 
     if (this[compId]) throw "The entity already has the component"
-    this[compId] = new component[compId]()
+    this[compId] = new component[compId](arg1, arg2, arg3, arg4, arg5, arg6)
     component[compId].belongsTo.forEach(function (sysId) {
       if (qualifiesForSystem(this, sysId)) {
         sys = system[sysId]
@@ -133,16 +135,16 @@
 
   // ***********************************************
   // Helper functions
-
+  //
   var callIfExists = function(func) {
-    if (typeof func == 'function') {
+    if (typeof func == "function") {
       func()
     }
   }
 
   // ***********************************************
   // Linked list
-
+  //
   var LinkedList = Kran.LinkedList = function () {
     this.head = null
     this.tail = null
@@ -196,7 +198,7 @@
       typeof module.exports === "object") {
     module.exports = Kran
   } else if (typeof define === "function" && define.amd) { // AMD module
-    define('kran', [], function() { return Kran } )
+    define("kran", [], function() { return Kran } )
   } else { // Otherwise just attach to the global object
     this.Kran = Kran
   }

@@ -134,6 +134,16 @@ describe 'Kran:', ->
       ent.add(comp)
       system[sys].entities.head.data.should.equal ent.id
 
+    it 'passes the arguments given to add along to the constructor', ->
+      Spy = sinon.spy((arg1, arg2, arg3) ->
+        arg1.should.equal(1)
+        arg2.should.equal('foo')
+        arg3.should.have.length(2)
+      )
+      comp = component.new(Spy)
+      entity.new().add(comp, 1, 'foo', ['a', 2])
+      Spy.should.have.been.calledOnce
+
     it 'adds entities to systems when they qualify', ->
       comp = component.new(() -> @v = 1)
       comp2 = component.new(() -> @v = 1)
