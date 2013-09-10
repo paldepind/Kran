@@ -5,7 +5,7 @@ entity = require( '../kran').entity
 describe 'Kran:', ->
 
   afterEach ->
-    component.length = 0
+    component.reset()
     system.length = 0
     system.all.length = 0
     entity.length = 0
@@ -38,21 +38,12 @@ describe 'Kran:', ->
       foo = new component[comp]()
       foo.bar.should.equal 17
 
-    it 'keeps track of which systems includes it', ->
-      comp2 = component.new(() -> foo)
-      comp3 = component.new(() -> foo)
-      sys = system.new({
-        components: [comp, comp3]
-      })
-      component[comp].belongsTo[0].should.equal(sys)
-      component[comp3].belongsTo[0].should.equal(sys)
-      component[comp2].belongsTo.length.should.equal(0)
-
     it 'handles a single non-array component', ->
       sys = system.new({
         components: comp
       })
-      component[comp].belongsTo[0].should.equal(sys)
+      entity.new().add(comp)
+      system.all.run()
 
   describe 'system', ->
     it 'makes it possible to add new systems', ->
@@ -129,9 +120,10 @@ describe 'Kran:', ->
       comp = component.new(() -> @f = 1)
       comp2 = component.new(() -> @f = 1)
       system.new({ components: comp2 })
-      system.new({ components: comp, every: spy })
-      entity.new().add(comp) # system properly stores the entities id=0
+      sys = system.new({ components: comp, every: spy })
+      ent = entity.new().add(comp) # system properly stores the entities id=0
       system.all.run()
+      system[sys].entities.head.data.should.equal ent.id
 
   describe 'entity', ->
     it 'allows for creation of new entities', ->
@@ -146,18 +138,20 @@ describe 'Kran:', ->
         components: [comp],
         pre: spy
       }
-      component[comp].belongsTo[0].should.equal(sys)
       ent = entity.new()
       ent.add(comp)
-      system[sys].entities.head.data.should.equal ent.id
 
-    it 'can add non-constructor components to entitties', ->
+    it 'can add non-constructor object components to entitties', ->
       obj = { foo: 'bar' }
       comp = component.new(obj)
       ent = entity.new().add(comp)
       ent2 = entity.new().add(comp)
       ent[comp].should.equal(obj)
       ent2[comp].should.equal(obj)
+
+    it 'can add primitive components to entitties', ->
+      comp = component.new(1)
+      ent = entity.new().add(comp)
 
     it 'passes the arguments given to add along to the constructor', ->
       Spy = sinon.spy((arg1, arg2, arg3) ->

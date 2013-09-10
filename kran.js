@@ -6,11 +6,17 @@
   // Component
   //
   var component = Kran.component = []
+  var systemsRequieringComp = []
 
   component.new = function(comp) {
-    comp.belongsTo = []
+    systemsRequieringComp.push([])
     this.push(comp)
     return this.length - 1
+  }
+
+  component.reset = function() {
+    this.length = 0
+    systemsRequieringComp.length = 0
   }
 
   // ***********************************************
@@ -38,7 +44,7 @@
     if (props.components !== undefined) {
       props.components = wrapInArray(props.components)
       props.components.forEach(function (compId) {
-        component[compId].belongsTo.push(id)
+        systemsRequieringComp[compId].push(id)
       })
       props.compsBuffer = new Array(props.components.length)
     }
@@ -110,7 +116,7 @@
     } else {
       this[compId] = component[compId]
     }
-    component[compId].belongsTo.forEach(function (sysId) {
+    systemsRequieringComp[compId].forEach(function (sysId) {
       if (qualifiesForSystem(this, sysId)) {
         sys = system[sysId]
         sysEntry = sys.entities.add(this.id)
