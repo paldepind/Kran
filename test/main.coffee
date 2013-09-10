@@ -1,6 +1,6 @@
-component = require( '../src/main').component
-system = require( '../src/main').system
-entity = require( '../src/main').entity
+component = require( '../kran').component
+system = require( '../kran').system
+entity = require( '../kran').entity
 
 describe 'Kran:', ->
 
@@ -122,7 +122,7 @@ describe 'Kran:', ->
       entity.new().id.should.equal 1
       entity.new().id.should.equal 2
 
-    it 'can add components to entities', ->
+    it 'can add constructor components to entities', ->
       spy = sinon.spy()
       comp = component.new(() -> @v = 1)
       sys = system.new {
@@ -133,6 +133,14 @@ describe 'Kran:', ->
       ent = entity.new()
       ent.add(comp)
       system[sys].entities.head.data.should.equal ent.id
+
+    it 'can add non-constructor components to entitties', ->
+      obj = { foo: 'bar' }
+      comp = component.new(obj)
+      ent = entity.new().add(comp)
+      ent2 = entity.new().add(comp)
+      ent[comp].should.equal(obj)
+      ent2[comp].should.equal(obj)
 
     it 'passes the arguments given to add along to the constructor', ->
       Spy = sinon.spy((arg1, arg2, arg3) ->

@@ -7,9 +7,9 @@
   //
   var component = Kran.component = []
 
-  component.new = function(constr) {
-    constr.belongsTo = []
-    this.push(constr)
+  component.new = function(comp) {
+    comp.belongsTo = []
+    this.push(comp)
     return this.length - 1
   }
 
@@ -88,8 +88,12 @@
   var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6) {
     var sysEntry, sys
 
-    if (this[compId]) throw "The entity already has the component"
-    this[compId] = new component[compId](arg1, arg2, arg3, arg4, arg5, arg6)
+    if (this[compId !== undefined]) throw "The entity already has the component"
+    if (typeof(component[compId]) === 'function') {
+      this[compId] = new component[compId](arg1, arg2, arg3, arg4, arg5, arg6)
+    } else {
+      this[compId] = component[compId]
+    }
     component[compId].belongsTo.forEach(function (sysId) {
       if (qualifiesForSystem(this, sysId)) {
         sys = system[sysId]
