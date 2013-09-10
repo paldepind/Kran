@@ -7,6 +7,7 @@ describe 'Kran:', ->
   afterEach ->
     component.length = 0
     system.length = 0
+    system.all.length = 0
     entity.length = 0
 
   describe 'component', ->
@@ -71,7 +72,7 @@ describe 'Kran:', ->
       spy = sinon.spy()
       system.new { pre: spy }
       system.new { post: spy }
-      system.runAll()
+      system.all.run()
       spy.should.have.been.calledTwice
 
     it 'seperates systems into groups', ->
@@ -81,7 +82,7 @@ describe 'Kran:', ->
       system.new { pre: spy2, group: 'thsBgrp' }
       system.new { pre: spy2, group: 'thsBgrp' }
 
-      system.runAll()
+      system.all.run()
       system.thsBgrp.run()
 
       spy.should.have.been.calledOnce
@@ -93,8 +94,15 @@ describe 'Kran:', ->
       system.new { every: spy, components: comp }
       entity.new().add(comp)
       entity.new().add(comp)
-      system.runAll()
+      system.all.run()
       spy.should.have.been.calledTwice
+
+    it 'doesnt call the every function if nonexistent', ->
+      spy = sinon.spy()
+      comp = component.new(() -> @v = 1)
+      system.new { components: comp }
+      entity.new().add(comp)
+      system.all.run()
 
     it 'calls the every function with components as arguments', ->
       func = (comp2, comp) ->
@@ -104,7 +112,7 @@ describe 'Kran:', ->
       comp2 = component.new(() -> @v = 2)
       system.new { every: func, components: [comp2, comp] }
       entity.new().add(comp).add(comp2)
-      system.runAll()
+      system.all.run()
 
     it 'calls arrival and departure with proper components arguments', ->
       spy = sinon.spy (comp, comp2) ->
@@ -115,6 +123,15 @@ describe 'Kran:', ->
       system.new { arrival: spy, departure: spy, components: [comp2, comp] }
       entity.new().add(comp).add(comp2).remove(comp)
       spy.should.have.been.calledTwice
+
+    it 'assigns proper ids in entities list', ->
+      spy = sinon.spy()
+      comp = component.new(() -> @f = 1)
+      comp2 = component.new(() -> @f = 1)
+      system.new({ components: comp2 })
+      system.new({ components: comp, every: spy })
+      entity.new().add(comp) # system properly stores the entities id=0
+      system.all.run()
 
   describe 'entity', ->
     it 'allows for creation of new entities', ->

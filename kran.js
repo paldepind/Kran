@@ -18,26 +18,45 @@
   //
   var system = Kran.system = []
 
+  var runGroup = function() {
+    for (var i = 0; i < this.length; i++)
+      system[this[i]].run()
+  }
+
+  var initGroup = function (name) {
+    system[name] = []
+    system[name].run = runGroup
+  }
+
+  initGroup('all')
+
   system.new = function(props) {
     var id = this.length
     props.entities = new LinkedList()
     props.run = runSystem
 
-    if (props.group) {
-      if (!this[props.group]) {
-        this[props.group] = []
-        this[props.group].run = runGroup
-      }
-      this[props.group].push(id)
-    }
     if (props.components !== undefined) {
-      if (!(props.components instanceof Array)) {
-        props.components = [ props.components ]
-      }
+      props.components = wrapInArray(props.components)
       props.components.forEach(function (compId) {
         component[compId].belongsTo.push(id)
       })
       props.compsBuffer = new Array(props.components.length)
+    }
+    if (props.on) {
+      props.on = wrapInArray(props.on)
+      props.on.forEach(function (event) {
+        window.addEventListener(event, function() {
+          runSystem.call(props)
+        })
+      })
+    } else {
+      if (props.group) {
+        if (!this[props.group]) {
+          initGroup(props.group)
+        }
+        this[props.group].push(id)
+      }
+      this.all.push(id)
     }
     this.push(props)
     return id
@@ -46,10 +65,12 @@
   var runSystem = function() {
     callIfExists(this.pre) // Call pre
 
-    this.entities.forEach(function (entId) { // Call every
-      callFuncWithCompsFromEnt(this.components, this.compsBuffer,
-                               entity[entId], this.every)
-    }, this)
+    if (typeof(this.every) === 'function') {
+      this.entities.forEach(function (entId) { // Call every
+        callFuncWithCompsFromEnt(this.components, this.compsBuffer,
+                                 entity[entId], this.every)
+      }, this)
+    }
     
     callIfExists(this.post) // Call post
   }
@@ -59,15 +80,6 @@
       buffer[i] = ent[comps[i]]
     }
     func.apply(ent, buffer)
-  }
-
-  var runGroup = function() {
-    for (var i = 0; i < this.length; i++)
-      system[this[i]].run()
-  }
-
-  system.runAll = function() {
-    this.forEach(function(sys) { sys.run() })
   }
 
   // ***********************************************
@@ -85,6 +97,10 @@
     return this[id]
   }
 
+  var systemBelonging = function (id, entry) {
+    this.id = id; this.entry = entry
+  }
+
   var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6) {
     var sysEntry, sys
 
@@ -97,8 +113,8 @@
     component[compId].belongsTo.forEach(function (sysId) {
       if (qualifiesForSystem(this, sysId)) {
         sys = system[sysId]
-        sysEntry = sys.entities.add(sysId)
-        this.belongsTo.add(sysEntry)
+        sysEntry = sys.entities.add(this.id)
+        this.belongsTo.add(new systemBelonging(sysId, sysEntry))
         if (sys.arrival) {
           callFuncWithCompsFromEnt(sys.components,
             sys.compsBuffer, this, sys.arrival)
@@ -112,12 +128,12 @@
     var sys
       
     var tempComp = this[compId]
-    this.belongsTo.forEach(function (sysEntry, elm) {
+    this.belongsTo.forEach(function (sysInf, elm) {
       this[compId] = undefined
-      if (!qualifiesForSystem(this, sysEntry.data)) {
+      if (!qualifiesForSystem(this, sysInf.id)) {
         this[compId] = tempComp
-        sys = system[sysEntry.data]
-        sysEntry.remove()
+        sys = system[sysInf.id]
+        sysInf.entry.remove()
         elm.remove()
         if (sys.departure) {
           callFuncWithCompsFromEnt(sys.components,
@@ -143,6 +159,14 @@
   var callIfExists = function(func) {
     if (typeof func == "function") {
       func()
+    }
+  }
+
+  var wrapInArray = function(arg) {
+    if (arg instanceof Array) {
+      return arg
+    } else {
+      return [arg]
     }
   }
 
