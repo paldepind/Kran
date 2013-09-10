@@ -1,4 +1,4 @@
-Llist = require('../src/main').LinkedList
+Llist = require('../kran').LinkedList
 
 describe 'linked list', ->
   list = null 
