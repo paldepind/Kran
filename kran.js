@@ -45,6 +45,8 @@
     if (props.components !== undefined) {
       props.components = wrapInArray(props.components)
       props.components.forEach(function (compId) {
+        if (component[compId] === undefined)
+          throw new Error("Component " + compId + " does not exist")
         systemsRequieringComp[compId].push(id)
       })
       bufferLength += props.components.length
@@ -70,37 +72,27 @@
   }
 
   var runSystem = function(ev) {
-    callPreOrPost(this.pre, this.components, this.compsBuffer, ev)
+    if (isFunc(this.pre)) this.pre(ev)
 
     if (isFunc(this.every)) {
       this.entities.forEach(function (entId) { // Call every
-        callFuncWithCompsFromArr(this.components, this.compsBuffer,
+        callFuncWithCompsFromEnt(this.components, this.compsBuffer,
                                  entity[entId], this.every, ev)
       }, this)
     }
-    callPreOrPost(this.post, this.components, this.compsBuffer, ev)
+    if (isFunc(this.post)) this.post(ev)
   }
 
-  var callFuncWithCompsFromArr = function(comps, buffer, arr, func, ev) {
+  var callFuncWithCompsFromEnt = function(comps, buffer, ent, func, ev) {
     if (ev) buffer[0] = ev
     for (var i = 0; i < comps.length; i++) {
-      if (isFunc(arr[comps[i]])) {
+      if (isFunc(ent[comps[i]])) {
         buffer[i + (ev ? 1 : 0)] = undefined
       } else {
-        buffer[i + (ev ? 1 : 0)] = arr[comps[i]]
+        buffer[i + (ev ? 1 : 0)] = ent[comps[i]]
       }
     }
     func.apply(this, buffer)
-  }
-
-  var callPreOrPost = function(preOrPost, comps, compsBuffer, ev) {
-    if (isFunc(preOrPost)) {
-      if (comps) {
-        callFuncWithCompsFromArr(comps, compsBuffer, component, preOrPost, ev)
-      } else {
-        preOrPost(ev)
-      }
-    }
   }
 
   // ***********************************************
@@ -125,7 +117,7 @@
   var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6) {
     var sysEntry, sys
 
-    if (this[compId !== undefined]) throw "The entity already has the component"
+    if (this[compId !== undefined]) throw new Error("The entity already has the component")
     if (typeof(component[compId]) === 'function') {
       this[compId] = new component[compId](arg1, arg2, arg3, arg4, arg5, arg6)
     } else {
@@ -137,7 +129,7 @@
         sysEntry = sys.entities.add(this.id)
         this.belongsTo.add(new systemBelonging(sysId, sysEntry))
         if (sys.arrival) {
-          callFuncWithCompsFromArr(sys.components,
+          callFuncWithCompsFromEnt(sys.components,
             sys.compsBuffer, this, sys.arrival)
         }
       }
@@ -157,7 +149,7 @@
         sysInf.entry.remove()
         elm.remove()
         if (sys.departure) {
-          callFuncWithCompsFromArr(sys.components,
+          callFuncWithCompsFromEnt(sys.components,
             sys.compsBuffer, this, sys.departure)
         }
       }

@@ -115,10 +115,10 @@ describe 'Kran:', ->
       entity.new().add(comp).add(comp2).remove(comp)
       spy.should.have.been.calledTwice
 
-    it 'calls pre and post with components if they arent constructor functions', ->
+    it 'calls pre and post with nothing', ->
       spy = sinon.spy (comp, comp2) ->
         should.not.exist(comp)
-        comp2.foo.should.equal('bar')
+        should.not.exist(comp2)
       comp = component.new(() -> @v = 1)
       comp2 = component.new({ foo: 'bar' })
       system.new { pre: spy, post: spy, components: [comp, comp2] }
