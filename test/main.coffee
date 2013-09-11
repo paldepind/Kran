@@ -15,7 +15,7 @@ describe 'Kran:', ->
     comp = null
 
     beforeEach ->
-      comp = component.new( -> @bar = 17 )
+      comp = component.new(() -> @bar = 17 )
 
     it 'stores all components and their constructor function', ->
       func1 = () -> @x = 1
@@ -33,6 +33,10 @@ describe 'Kran:', ->
       comp.should.equal 0
       comp2.should.equal 1
       comp3.should.equal 2
+
+    it 'can create components without a constructor', ->
+      comp1 = component.new()
+      component[comp1].should.equal(true)
 
     it 'can be instantiated', ->
       foo = new component[comp]()
@@ -120,7 +124,7 @@ describe 'Kran:', ->
         should.not.exist(comp)
         should.not.exist(comp2)
       comp = component.new(() -> @v = 1)
-      comp2 = component.new({ foo: 'bar' })
+      comp2 = component.new(() -> @foo = 'bar')
       system.new { pre: spy, post: spy, components: [comp, comp2] }
       entity.new().add(comp).add(comp2)
       system.all.run()
@@ -142,7 +146,7 @@ describe 'Kran:', ->
       sys = system.new({ components: comp, every: spy })
       ent = entity.new().add(comp) # system properly stores the entities id=0
       system.all.run()
-      system[sys].entities.head.data.should.equal ent.id
+      system[sys].entities.head.data.should.equal ent
 
   describe 'entity', ->
     it 'allows for creation of new entities', ->
@@ -160,17 +164,12 @@ describe 'Kran:', ->
       ent = entity.new()
       ent.add(comp)
 
-    it 'can add non-constructor object components to entitties', ->
-      obj = { foo: 'bar' }
-      comp = component.new(obj)
-      ent = entity.new().add(comp)
-      ent2 = entity.new().add(comp)
-      ent[comp].should.equal(obj)
-      ent2[comp].should.equal(obj)
-
-    it 'can add primitive components to entitties', ->
-      comp = component.new(1)
-      ent = entity.new().add(comp)
+    it 'can add non-constructor components to entitties', ->
+      comp = component.new()
+      ent = entity.new().add(comp, 2)
+      ent2 = entity.new().add(comp, 3)
+      ent[comp].should.equal(2)
+      ent2[comp].should.equal(3)
 
     it 'passes the arguments given to add along to the constructor', ->
       Spy = sinon.spy((arg1, arg2, arg3) ->

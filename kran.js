@@ -9,8 +9,15 @@
   var systemsRequieringComp = []
 
   component.new = function(comp) {
+    if (isFunc(comp)) {
+      this.push(comp)
+    } else if (comp === undefined) {
+      this.push(true)
+    } else {
+      console.log("WHOOOO")
+      throw new TypeError("Argument " + comp + " is given but not a function")
+    }
     systemsRequieringComp.push([])
-    this.push(comp)
     return this.length - 1
   }
 
@@ -72,11 +79,14 @@
   }
 
   var runSystem = function(ev) {
+    if (ev && ev instanceof CustomEvent) {
+      ev = ev.detail
+    }
     if (isFunc(this.pre)) this.pre(ev)
     if (isFunc(this.every)) {
-      this.entities.forEach(function (entId) { // Call every
+      this.entities.forEach(function (ent) { // Call every
         callFuncWithCompsFromEnt(this.components, this.compsBuffer,
-                                 entity[entId], this.every, ev)
+                                 ent, this.every, ev)
       }, this)
     }
     if (isFunc(this.post)) this.post(ev)
@@ -107,7 +117,7 @@
     return this[id]
   }
 
-  var systemBelonging = function (id, entry) {
+  var SystemBelonging = function (id, entry) {
     this.id = id; this.entry = entry
   }
 
@@ -116,7 +126,7 @@
     if (typeof(component[compId]) === 'function') {
       this[compId] = new component[compId](arg1, arg2, arg3, arg4, arg5, arg6, arg7)
     } else {
-      this[compId] = component[compId]
+      this[compId] = arg1
     }
     systemsRequieringComp[compId].forEach(function (sysId) {
       if (qualifiesForSystem(this, sysId)) {
@@ -128,8 +138,8 @@
 
   var addEntityToSystem = function(ent, sysId) {
     var sysEntry, sys = system[sysId]
-    sysEntry = sys.entities.add(ent.id)
-    ent.belongsTo.add(new systemBelonging(sysId, sysEntry))
+    sysEntry = sys.entities.add(ent)
+    ent.belongsTo.add(new SystemBelonging(sysId, sysEntry))
     if (sys.arrival) {
       callFuncWithCompsFromEnt(sys.components,
         sys.compsBuffer, ent, sys.arrival)
@@ -163,13 +173,21 @@
     }
   }
 
-  var qualifiesForSystem = function (entity, sysId) {
+  var qualifiesForSystem = function (ent, sysId) {
     return system[sysId].components.every(function (compId) {
-      if (entity[compId] === undefined) {
+      if (ent[compId] === undefined) {
         return false
       }
       return true
     })
+  }
+
+  // ***********************************************
+  // Event system
+  //
+  Kran.trigger = function(name, data) {
+    var event = new CustomEvent(name, { detail: data })
+    window.dispatchEvent(event)
   }
 
   // ***********************************************
