@@ -38,7 +38,7 @@
 
   system.new = function(props) {
     var id = this.length
-    var bufferLength = 0
+    var bufferLength = 1
     props.entities = new LinkedList()
     props.run = runSystem
 
@@ -87,6 +87,7 @@
     for (var i = 0; i < comps.length; i++) {
       buffer[i + (ev ? 1 : 0)] = ent[comps[i]]
     }
+    buffer[i] = ent
     func.apply(this, buffer)
   }
 
@@ -101,6 +102,7 @@
     this[id].id = id
     this[id].add = addComponent
     this[id].remove = removeComponent
+    this[id].delete = removeEntity
     this[id].belongsTo = new LinkedList
     return this[id]
   }
@@ -109,10 +111,10 @@
     this.id = id; this.entry = entry
   }
 
-  var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6) {
+  var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
     if (this[compId !== undefined]) throw new Error("The entity already has the component")
     if (typeof(component[compId]) === 'function') {
-      this[compId] = new component[compId](arg1, arg2, arg3, arg4, arg5, arg6)
+      this[compId] = new component[compId](arg1, arg2, arg3, arg4, arg5, arg6, arg7)
     } else {
       this[compId] = component[compId]
     }
@@ -135,8 +137,6 @@
   }
 
   var removeComponent = function(compId) {
-    var sys
-      
     var tempComp = this[compId]
     this.belongsTo.forEach(function (sysInf, elm) {
       this[compId] = undefined
@@ -146,6 +146,12 @@
       }
     }, this)
     this[compId] = undefined
+  }
+
+  var removeEntity = function() {
+    this.belongsTo.forEach(function (sysInf, elm) {
+      removeEntityFromSystem(this, elm, system[sysInf.id], sysInf.entry)
+    }, this)
   }
 
   var removeEntityFromSystem = function(ent, belongsToElm, sys, sysEntry) {

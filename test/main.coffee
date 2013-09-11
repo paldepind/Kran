@@ -126,6 +126,14 @@ describe 'Kran:', ->
       system.all.run()
       spy.should.have.been.calledTwice
 
+    it 'calls every with entity as last argument', ->
+      spy = sinon.spy (x, e) ->
+        e.should.equal(ent)
+      comp = component.new(() -> @v = 1)
+      system.new({ every: spy, components: comp })
+      ent = entity.new().add(comp)
+      system.all.run()
+
     it 'assigns proper ids in entities list', ->
       spy = sinon.spy()
       comp = component.new(() -> @f = 1)
@@ -186,14 +194,30 @@ describe 'Kran:', ->
       should.exist(ent.belongsTo.head)
 
     it 'allows removal of components and updates system accordingly', ->
+      spy = sinon.spy()
       comp = component.new(() -> @v = 1)
       comp2 = component.new(() -> @v = 1)
       comp3 = component.new(() -> @v = 1)
-      sys = system.new({ components: [comp, comp3] })
+      sys = system.new({ components: [comp, comp3], every: spy })
 
       ent = entity.new().add(comp).add(comp2).add(comp3)
+      system.all.run()
       should.exist(ent.belongsTo.head)
       ent.remove(comp2)
       should.exist(ent.belongsTo.head)
       ent.remove(comp)
       should.not.exist(ent.belongsTo.head)
+      system.all.run()
+      spy.should.have.been.calledOnce
+
+    it 'makes it possible to delete entities', ->
+      spy = sinon.spy()
+      comp = component.new(() -> @v = 1)
+      sys = system.new({ components: comp, every: spy })
+
+      ent = entity.new().add(comp)
+      system.all.run()
+      ent.delete()
+      system.all.run()
+      spy.should.have.been.calledOnce
+
