@@ -73,7 +73,6 @@
 
   var runSystem = function(ev) {
     if (isFunc(this.pre)) this.pre(ev)
-
     if (isFunc(this.every)) {
       this.entities.forEach(function (entId) { // Call every
         callFuncWithCompsFromEnt(this.components, this.compsBuffer,
@@ -86,11 +85,7 @@
   var callFuncWithCompsFromEnt = function(comps, buffer, ent, func, ev) {
     if (ev) buffer[0] = ev
     for (var i = 0; i < comps.length; i++) {
-      if (isFunc(ent[comps[i]])) {
-        buffer[i + (ev ? 1 : 0)] = undefined
-      } else {
-        buffer[i + (ev ? 1 : 0)] = ent[comps[i]]
-      }
+      buffer[i + (ev ? 1 : 0)] = ent[comps[i]]
     }
     func.apply(this, buffer)
   }
@@ -115,8 +110,6 @@
   }
 
   var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6) {
-    var sysEntry, sys
-
     if (this[compId !== undefined]) throw new Error("The entity already has the component")
     if (typeof(component[compId]) === 'function') {
       this[compId] = new component[compId](arg1, arg2, arg3, arg4, arg5, arg6)
@@ -125,16 +118,20 @@
     }
     systemsRequieringComp[compId].forEach(function (sysId) {
       if (qualifiesForSystem(this, sysId)) {
-        sys = system[sysId]
-        sysEntry = sys.entities.add(this.id)
-        this.belongsTo.add(new systemBelonging(sysId, sysEntry))
-        if (sys.arrival) {
-          callFuncWithCompsFromEnt(sys.components,
-            sys.compsBuffer, this, sys.arrival)
-        }
+        addEntityToSystem(this, sysId)
       }
     }, this)
     return this
+  }
+
+  var addEntityToSystem = function(ent, sysId) {
+    var sysEntry, sys = system[sysId]
+    sysEntry = sys.entities.add(ent.id)
+    ent.belongsTo.add(new systemBelonging(sysId, sysEntry))
+    if (sys.arrival) {
+      callFuncWithCompsFromEnt(sys.components,
+        sys.compsBuffer, ent, sys.arrival)
+    }
   }
 
   var removeComponent = function(compId) {
@@ -145,16 +142,19 @@
       this[compId] = undefined
       if (!qualifiesForSystem(this, sysInf.id)) {
         this[compId] = tempComp
-        sys = system[sysInf.id]
-        sysInf.entry.remove()
-        elm.remove()
-        if (sys.departure) {
-          callFuncWithCompsFromEnt(sys.components,
-            sys.compsBuffer, this, sys.departure)
-        }
+        removeEntityFromSystem(this, elm, system[sysInf.id], sysInf.entry)
       }
     }, this)
     this[compId] = undefined
+  }
+
+  var removeEntityFromSystem = function(ent, belongsToElm, sys, sysEntry) {
+    sysEntry.remove()
+    belongsToElm.remove()
+    if (sys.departure) {
+      callFuncWithCompsFromEnt(sys.components,
+        sys.compsBuffer, ent, sys.departure)
+    }
   }
 
   var qualifiesForSystem = function (entity, sysId) {
