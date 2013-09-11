@@ -168,8 +168,8 @@ describe 'Kran:', ->
       comp = component.new()
       ent = entity.new().add(comp, 2)
       ent2 = entity.new().add(comp, 3)
-      ent[comp].should.equal(2)
-      ent2[comp].should.equal(3)
+      ent[comp].val.should.equal(2)
+      ent2[comp].val.should.equal(3)
 
     it 'passes the arguments given to add along to the constructor', ->
       Spy = sinon.spy((arg1, arg2, arg3) ->

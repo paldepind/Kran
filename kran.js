@@ -126,7 +126,7 @@
     if (typeof(component[compId]) === 'function') {
       this[compId] = new component[compId](arg1, arg2, arg3, arg4, arg5, arg6, arg7)
     } else {
-      this[compId] = arg1
+      this[compId] = { val: arg1 }
     }
     systemsRequieringComp[compId].forEach(function (sysId) {
       if (qualifiesForSystem(this, sysId)) {
