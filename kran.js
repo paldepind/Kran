@@ -70,27 +70,37 @@
   }
 
   var runSystem = function(ev) {
-    if (isFunc(this.pre)) { // Call pre
-      this.pre(ev)
-    }
+    callPreOrPost(this.pre, this.components, this.compsBuffer, ev)
+
     if (isFunc(this.every)) {
       this.entities.forEach(function (entId) { // Call every
-        callFuncWithCompsFromEnt(this.components, this.compsBuffer,
+        callFuncWithCompsFromArr(this.components, this.compsBuffer,
                                  entity[entId], this.every, ev)
       }, this)
     }
-    if (isFunc(this.post)) { // Call post
-      this.post(ev)
-    }
+    callPreOrPost(this.post, this.components, this.compsBuffer, ev)
   }
 
-  var callFuncWithCompsFromEnt = function(comps, buffer, ent, func, ev) {
-    if (ev)
-      buffer[0] = ev
+  var callFuncWithCompsFromArr = function(comps, buffer, arr, func, ev) {
+    if (ev) buffer[0] = ev
     for (var i = 0; i < comps.length; i++) {
-      buffer[i + (ev ? 1 : 0)] = ent[comps[i]]
+      if (isFunc(arr[comps[i]])) {
+        buffer[i + (ev ? 1 : 0)] = undefined
+      } else {
+        buffer[i + (ev ? 1 : 0)] = arr[comps[i]]
+      }
     }
-    func.apply(ent, buffer)
+    func.apply(this, buffer)
+  }
+
+  var callPreOrPost = function(preOrPost, comps, compsBuffer, ev) {
+    if (isFunc(preOrPost)) {
+      if (comps) {
+        callFuncWithCompsFromArr(comps, compsBuffer, component, preOrPost, ev)
+      } else {
+        preOrPost(ev)
+      }
+    }
   }
 
   // ***********************************************
@@ -127,7 +137,7 @@
         sysEntry = sys.entities.add(this.id)
         this.belongsTo.add(new systemBelonging(sysId, sysEntry))
         if (sys.arrival) {
-          callFuncWithCompsFromEnt(sys.components,
+          callFuncWithCompsFromArr(sys.components,
             sys.compsBuffer, this, sys.arrival)
         }
       }
@@ -147,7 +157,7 @@
         sysInf.entry.remove()
         elm.remove()
         if (sys.departure) {
-          callFuncWithCompsFromEnt(sys.components,
+          callFuncWithCompsFromArr(sys.components,
             sys.compsBuffer, this, sys.departure)
         }
       }
