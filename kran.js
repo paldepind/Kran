@@ -30,23 +30,24 @@
   //
   var entityCollections = []
 
-  var getEntityCollection = function(comps) {
-    var coll
-    entityCollections.some(function (c) {
-      if (identical(comps, c.comps)) {
-        coll = c
-        return true
+  var EntityCollection = function(comps) {
+    this.comps = comps
+    this.ents = new LinkedList()
+  }
+
+  var getOrCreateEntityCollection = function(comps) {
+    for (var i = 0; i < entityCollections.length; i++) {
+      if (identical(comps, entityCollections[i].comps)) {
+        return entityCollections[i]
       }
-    })
-    if (coll === undefined) {
-      coll = { comps: comps, ents: new LinkedList() }
-      comps.forEach(function (compId) {
-        if (component[compId] === undefined)
-          throw new Error("Component " + compId + " does no exist")
-        collectionsRequieringComp[compId].push(coll)
-      })
-      entityCollections.push(coll)
     }
+    var coll = new EntityCollection(comps)
+    comps.forEach(function (compId) {
+      if (component[compId] === undefined)
+        throw new Error("Component " + compId + " does no exist")
+      collectionsRequieringComp[compId].push(coll)
+    })
+    entityCollections.push(coll)
     return coll
   }
 
@@ -74,7 +75,7 @@
 
     if (props.components !== undefined) {
       props.components = wrapInArray(props.components)
-      props.entities = getEntityCollection(props.components).ents
+      props.entities = getOrCreateEntityCollection(props.components).ents
       bufferLength += props.components.length
     }
     if (props.on) {
@@ -215,12 +216,6 @@
 
   var identical = function(a1, a2) {
     return a1.slice(0).sort().toString == a2.slice(0).sort().toString()
-  }
-  
-  var missingAnyFrom = function(a1, a2) {
-    return !(a2.some(function (elm) {
-      return a1.indexOf(elm) == -1
-    }))
   }
 
   // ***********************************************
