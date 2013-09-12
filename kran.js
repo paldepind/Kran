@@ -6,7 +6,7 @@
   // Component
   //
   var component = Kran.component = []
-  var systemsRequieringComp = []
+  var collectionsRequieringComp = []
 
   component.new = function(comp) {
     if (isFunc(comp)) {
@@ -14,16 +14,40 @@
     } else if (comp === undefined) {
       this.push(true)
     } else {
-      console.log("WHOOOO")
       throw new TypeError("Argument " + comp + " is given but not a function")
     }
-    systemsRequieringComp.push([])
+    collectionsRequieringComp.push([])
     return this.length - 1
   }
 
   component.reset = function() {
     this.length = 0
-    systemsRequieringComp.length = 0
+    collectionsRequieringComp.length = 0
+  }
+
+  // ***********************************************
+  // Entity collections
+  //
+  var entityCollections = []
+
+  var getEntityCollection = function(comps) {
+    var coll
+    entityCollections.some(function (c) {
+      if (identical(comps, c.comps)) {
+        coll = c
+        return true
+      }
+    })
+    if (coll === undefined) {
+      coll = { comps: comps, ents: new LinkedList() }
+      comps.forEach(function (compId) {
+        if (component[compId] === undefined)
+          throw new Error("Component " + compId + " does no exist")
+        collectionsRequieringComp[compId].push(coll)
+      })
+      entityCollections.push(coll)
+    }
+    return coll
   }
 
   // ***********************************************
@@ -46,16 +70,11 @@
   system.new = function(props) {
     var id = this.length
     var bufferLength = 1
-    props.entities = new LinkedList()
     props.run = runSystem
 
     if (props.components !== undefined) {
       props.components = wrapInArray(props.components)
-      props.components.forEach(function (compId) {
-        if (component[compId] === undefined)
-          throw new Error("Component " + compId + " does not exist")
-        systemsRequieringComp[compId].push(id)
-      })
+      props.entities = getEntityCollection(props.components).ents
       bufferLength += props.components.length
     }
     if (props.on) {
@@ -117,8 +136,8 @@
     return ent
   }
 
-  var SystemBelonging = function (id, entry) {
-    this.id = id; this.entry = entry
+  var CollectionBelonging = function (comps, entry) {
+    this.comps = comps; this.entry = entry
   }
 
   var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
@@ -128,53 +147,37 @@
     } else {
       this[compId] = { val: arg1 }
     }
-    systemsRequieringComp[compId].forEach(function (sysId) {
-      if (qualifiesForSystem(this, sysId)) {
-        addEntityToSystem(this, sysId)
+    collectionsRequieringComp[compId].forEach(function (coll) {
+      if (qualifiesForCollection(this, coll.comps)) {
+        addEntityToCollection(this, coll)
       }
     }, this)
     return this
   }
 
-  var addEntityToSystem = function(ent, sysId) {
-    var sysEntry, sys = system[sysId]
-    sysEntry = sys.entities.add(ent)
-    ent.belongsTo.add(new SystemBelonging(sysId, sysEntry))
-    if (sys.arrival) {
-      callFuncWithCompsFromEnt(sys.components,
-        sys.compsBuffer, ent, sys.arrival)
-    }
+  var addEntityToCollection = function(ent, coll) {
+    var collEntry = coll.ents.add(ent)
+    ent.belongsTo.add(new CollectionBelonging(coll.comps, collEntry))
   }
 
   var removeComponent = function(compId) {
-    var tempComp = this[compId]
-    this.belongsTo.forEach(function (sysInf, elm) {
-      this[compId] = undefined
-      if (!qualifiesForSystem(this, sysInf.id)) {
-        this[compId] = tempComp
-        removeEntityFromSystem(this, elm, system[sysInf.id], sysInf.entry)
+    this[compId] = undefined
+    this.belongsTo.forEach(function (collBelonging, elm) {
+      if (!qualifiesForCollection(this, collBelonging.comps)) {
+        collBelonging.entry.remove()
+        elm.remove()
       }
     }, this)
-    this[compId] = undefined
   }
 
   var removeEntity = function() {
-    this.belongsTo.forEach(function (sysInf, elm) {
-      removeEntityFromSystem(this, elm, system[sysInf.id], sysInf.entry)
-    }, this)
+    this.belongsTo.forEach(function (collBelonging, elm) {
+      collBelonging.entry.remove()
+    })
   }
 
-  var removeEntityFromSystem = function(ent, belongsToElm, sys, sysEntry) {
-    sysEntry.remove()
-    belongsToElm.remove()
-    if (sys.departure) {
-      callFuncWithCompsFromEnt(sys.components,
-        sys.compsBuffer, ent, sys.departure)
-    }
-  }
-
-  var qualifiesForSystem = function (ent, sysId) {
-    return system[sysId].components.every(function (compId) {
+  var qualifiesForCollection = function (ent, comps) {
+    return comps.every(function (compId) {
       if (ent[compId] === undefined) {
         return false
       }
@@ -193,11 +196,6 @@
   // ***********************************************
   // Helper functions
   //
-  var callIfExists = function(func) {
-    if (typeof func == "function") {
-      func()
-    }
-  }
 
   var isFunc = function(func) {
     if (typeof(func) === 'function') {
@@ -213,6 +211,16 @@
     } else {
       return [arg]
     }
+  }
+
+  var identical = function(a1, a2) {
+    return a1.slice(0).sort().toString == a2.slice(0).sort().toString()
+  }
+  
+  var missingAnyFrom = function(a1, a2) {
+    return !(a2.some(function (elm) {
+      return a1.indexOf(elm) == -1
+    }))
   }
 
   // ***********************************************

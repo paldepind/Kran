@@ -109,16 +109,6 @@ describe 'Kran:', ->
       entity.new().add(comp).add(comp2)
       system.all.run()
 
-    it 'calls arrival and departure with proper components arguments', ->
-      spy = sinon.spy (comp, comp2) ->
-        comp2.v.should.equal 1
-        comp.v.should.equal 2
-      comp = component.new(() -> @v = 1)
-      comp2 = component.new(() -> @v = 2)
-      system.new { arrival: spy, departure: spy, components: [comp2, comp] }
-      entity.new().add(comp).add(comp2).remove(comp)
-      spy.should.have.been.calledTwice
-
     it 'calls pre and post with nothing', ->
       spy = sinon.spy (comp, comp2) ->
         should.not.exist(comp)
