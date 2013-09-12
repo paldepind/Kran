@@ -107,14 +107,14 @@
   var entity = Kran.entity = []
 
   entity.new = function () {
-    var id = this.length
-    this.push(new Array(component.length))
-    this[id].id = id
-    this[id].add = addComponent
-    this[id].remove = removeComponent
-    this[id].delete = removeEntity
-    this[id].belongsTo = new LinkedList
-    return this[id]
+    // Entities wants to 'subtype' native Arrays but ECMAScript 5
+    // does not support this. This wrapper function get the job done.
+    var ent = new Array(component.lenght)
+    ent.add = addComponent
+    ent.remove = removeComponent
+    ent.delete = removeEntity
+    ent.belongsTo = new LinkedList()
+    return ent
   }
 
   var SystemBelonging = function (id, entry) {

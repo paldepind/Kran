@@ -150,9 +150,7 @@ describe 'Kran:', ->
 
   describe 'entity', ->
     it 'allows for creation of new entities', ->
-      entity.new().id.should.equal 0
-      entity.new().id.should.equal 1
-      entity.new().id.should.equal 2
+      entity.new().should.be.an('array')
 
     it 'can add constructor components to entities', ->
       spy = sinon.spy()
