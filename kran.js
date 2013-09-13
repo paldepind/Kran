@@ -20,15 +20,19 @@
     return this.length - 1
   }
 
-  component.reset = function() {
-    this.length = 0
+  var reset = Kran.reset = function() {
+    component.length = 0
     collectionsRequieringComp.length = 0
+    entity.length = 0
+    entityCollections = []
+    system.length = 0
+    system.all.length = 0
   }
 
   // ***********************************************
   // Entity collections
   //
-  var entityCollections = []
+  var entityCollections = {}
 
   var EntityCollection = function(comps) {
     this.comps = comps
@@ -36,19 +40,19 @@
   }
 
   var getOrCreateEntityCollection = function(comps) {
-    for (var i = 0; i < entityCollections.length; i++) {
-      if (identical(comps, entityCollections[i].comps)) {
-        return entityCollections[i]
-      }
+    var key = comps.slice(0).sort().toString()
+    if (entityCollections[key]) {
+      return entityCollections[key]
+    } else {
+      var coll = new EntityCollection(comps)
+      comps.forEach(function (compId) {
+        if (component[compId] === undefined)
+          throw new Error("Component " + compId + " does no exist")
+        collectionsRequieringComp[compId].push(coll)
+      })
+      entityCollections[key] = coll
+      return coll
     }
-    var coll = new EntityCollection(comps)
-    comps.forEach(function (compId) {
-      if (component[compId] === undefined)
-        throw new Error("Component " + compId + " does no exist")
-      collectionsRequieringComp[compId].push(coll)
-    })
-    entityCollections.push(coll)
-    return coll
   }
 
   // ***********************************************
@@ -197,7 +201,6 @@
   // ***********************************************
   // Helper functions
   //
-
   var isFunc = function(func) {
     if (typeof(func) === 'function') {
       return true
@@ -212,10 +215,6 @@
     } else {
       return [arg]
     }
-  }
-
-  var identical = function(a1, a2) {
-    return a1.slice(0).sort().toString == a2.slice(0).sort().toString()
   }
 
   // ***********************************************

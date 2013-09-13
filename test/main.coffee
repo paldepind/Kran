@@ -1,14 +1,12 @@
-component = require( '../kran').component
-system = require( '../kran').system
-entity = require( '../kran').entity
+Kran = require( '../kran')
+component = Kran.component
+system = Kran.system
+entity = Kran.entity
 
 describe 'Kran:', ->
 
   afterEach ->
-    component.reset()
-    system.length = 0
-    system.all.length = 0
-    entity.length = 0
+    Kran.reset()
 
   describe 'component', ->
 
@@ -137,6 +135,14 @@ describe 'Kran:', ->
       ent = entity.new().add(comp) # system properly stores the entities id=0
       system.all.run()
       system[sys].entities.head.data.should.equal ent
+
+    it 'shares entity collections between systems if possible', ->
+      comp = component.new()
+      comp2 = component.new()
+      sys = system.new({ components: [comp, comp2] })
+      sys2 = system.new({ components: [comp, comp2] })
+      console.log(system[sys].entities == system[sys2].entities)
+      system[sys].entities.should.equal(system[sys2].entities)
 
   describe 'entity', ->
     it 'allows for creation of new entities', ->
