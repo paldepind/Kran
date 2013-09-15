@@ -8,34 +8,34 @@
   var mouse = { x: 0, y: 0 }
 
   // Components
-  var circle = component.new(function (x, y, r) {
+  var circle = component(function (x, y, r) {
     this.x = x || 0
     this.y = y || 0
     this.radius = r || 20
   })
 
-  var color = component.new(function (r, g, b, a) {
+  var color = component(function (r, g, b, a) {
     this.r = r || 0; this.g = g || 0; this.b = b || 0; this.a = a || 1;
   })
 
-  var goingToExplodeIn = component.new()
+  var goingToExplodeIn = component()
 
-  var disappering = component.new(function (t) { this.time = t; this.curTime = t })
+  var disappering = component(function (t) { this.time = t; this.curTime = t })
 
-  var growing = component.new(function (s) { this.speed = s })
+  var growing = component(function (s) { this.speed = s })
 
-  var followMouse = component.new(function (s) { this.speed = s })
+  var followMouse = component(function (s) { this.speed = s })
 
-  var pulsing = component.new(function (size, speed) {
+  var pulsing = component(function (size, speed) {
     this.maxSize = size;
     this.curSize = 0
     this.speed = speed
   })
 
-  var weight = component.new()
+  var weight = component()
 
   // Systems
-  system.new({ // Render
+  system({ // Render
     components: [circle, color],
     pre: function() {
       render.clearRect(0, 0, render.canvas.width, render.canvas.height)
@@ -48,7 +48,7 @@
     },
   })
 
-  system.new({ // Resize
+  system({ // Resize
     on: ['load', 'resize'],
     pre: function(ev) {
       render.canvas.width = document.body.clientWidth
@@ -56,7 +56,7 @@
     }
   })
 
-  system.new({ // Update mouse coordinates
+  system({ // Update mouse coordinates
     on: 'mousemove',
     pre: function(ev) {
       mouse.x = ev.x
@@ -64,7 +64,7 @@
     }
   })
 
-  system.new({ // Follow mouse
+  system({ // Follow mouse
     components: [circle, followMouse],
     every: function(circle, followMouse) {
       var dx = mouse.x - circle.x
@@ -76,7 +76,7 @@
     }
   })
 
-  system.new({ // Fade out disappering entities
+  system({ // Fade out disappering entities
     components: [disappering, color],
     every: function(dis, color, ent) {
       dis.curTime--
@@ -85,19 +85,19 @@
     }
   })
 
-  system.new({
+  system({
     on: "explosion",
     pre: function(ev) {
-      entity.new().add(circle, ev.x, ev.y, 10).add(color, 255, 80, 0)
+      entity().add(circle, ev.x, ev.y, 10).add(color, 255, 80, 0)
                   .add(disappering, 20).add(growing, 5).add(weight, Infinity)
-      entity.new().add(circle, ev.x, ev.y, 7).add(color, 255, 255, 0)
+      entity().add(circle, ev.x, ev.y, 7).add(color, 255, 255, 0)
                   .add(disappering, 20).add(growing, 3.5)
-      entity.new().add(circle, ev.x, ev.y, 1).add(color, 255, 255, 255)
+      entity().add(circle, ev.x, ev.y, 1).add(color, 255, 255, 255)
                   .add(disappering, 20).add(growing, 1)
     }
   })
 
-  system.new({
+  system({
     components: [circle, goingToExplodeIn],
     every: function(circle, time, ent) {
       time.val--
@@ -108,23 +108,23 @@
     }
   })
 
-  system.new({
+  system({
     components: [circle, growing],
     every: function(circle, growing) {
       circle.radius += growing.speed
     }
   })
 
-  system.new({ // Place bomb
+  system({ // Place bomb
     on: "click",
     pre: function(ev) {
-      entity.new().add(circle, ev.x, ev.y, 10).add(color, 100, 0, 0)
+      entity().add(circle, ev.x, ev.y, 10).add(color, 100, 0, 0)
                   .add(goingToExplodeIn, 100).add(pulsing, 3, 0.15)
                   .add(weight, 100)
     }
   })
 
-  system.new({
+  system({
     components: [circle, pulsing],
     every: function(circle, pulsing) {
       circle.radius += pulsing.speed
@@ -136,7 +136,7 @@
     }
   })
 
-  system.new({ // Detect collisions
+  system({ // Detect collisions
     components: [circle, weight],
     pre: function() {
       this.entities.forEach(function (ent1, elm) {
@@ -149,14 +149,14 @@
     }
   })
 
-  entity.new().add(circle, 80, 152, 60).add(color).add(weight, 60).add(followMouse, 1)
-  entity.new().add(circle, 250, 152, 50).add(color).add(weight, 50).add(followMouse, 2)
-  entity.new().add(circle, 400, 152, 40).add(color).add(weight, 40).add(followMouse, 3)
-  entity.new().add(circle, 500, 152, 20).add(color).add(weight, 20).add(followMouse, 4)
-  entity.new().add(circle, 600, 152, 10).add(color).add(weight, 10).add(followMouse, 5)
+  entity().add(circle, 80, 152, 60).add(color).add(weight, 60).add(followMouse, 1)
+  entity().add(circle, 250, 152, 50).add(color).add(weight, 50).add(followMouse, 2)
+  entity().add(circle, 400, 152, 40).add(color).add(weight, 40).add(followMouse, 3)
+  entity().add(circle, 500, 152, 20).add(color).add(weight, 20).add(followMouse, 4)
+  entity().add(circle, 600, 152, 10).add(color).add(weight, 10).add(followMouse, 5)
 
   var gameLoop = function() {
-    system.all.run()
+    system.all()
     requestAnimationFrame(gameLoop)
   }
   gameLoop()

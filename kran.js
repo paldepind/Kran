@@ -2,31 +2,31 @@
 
   var Kran = {}
 
+  var reset = Kran.reset = function() {
+    components.length = 0
+    collectionsRequieringComp.length = 0
+    entity.length = 0
+    entityCollections = []
+    systems.length = 0
+    systems.all.length = 0
+  }
+
   // ***********************************************
   // Component
   //
-  var component = Kran.component = []
+  var components = []
   var collectionsRequieringComp = []
 
-  component.new = function(comp) {
+  var component = Kran.component = function(comp) {
     if (isFunc(comp)) {
-      this.push(comp)
+      components.push(comp)
     } else if (comp === undefined) {
-      this.push(true)
+      components.push(true)
     } else {
       throw new TypeError("Argument " + comp + " is given but not a function")
     }
     collectionsRequieringComp.push([])
-    return this.length - 1
-  }
-
-  var reset = Kran.reset = function() {
-    component.length = 0
-    collectionsRequieringComp.length = 0
-    entity.length = 0
-    entityCollections = []
-    system.length = 0
-    system.all.length = 0
+    return components.length - 1
   }
 
   // ***********************************************
@@ -37,6 +37,7 @@
   var EntityCollection = function(comps) {
     this.comps = comps
     this.ents = new LinkedList()
+    this.listeners = {}
   }
 
   var getOrCreateEntityCollection = function(comps) {
@@ -46,7 +47,7 @@
     } else {
       var coll = new EntityCollection(comps)
       comps.forEach(function (compId) {
-        if (component[compId] === undefined)
+        if (components[compId] === undefined)
           throw new Error("Component " + compId + " does no exist")
         collectionsRequieringComp[compId].push(coll)
       })
@@ -58,22 +59,17 @@
   // ***********************************************
   // System
   //
-  var system = Kran.system = []
+  var systems = []
+  var system = {}
 
   var runGroup = function() {
-    for (var i = 0; i < this.length; i++)
-      system[this[i]].run()
+    for (var i = 0; i < this.length; i++) {
+      systems[this[i]].run()
+    }
   }
 
-  var initGroup = function (name) {
-    system[name] = []
-    system[name].run = runGroup
-  }
-
-  initGroup('all')
-
-  system.new = function(props) {
-    var id = this.length
+  var system = Kran.system = function(props) {
+    var id = systems.length
     var bufferLength = 1
     props.run = runSystem
 
@@ -90,17 +86,24 @@
       bufferLength += props.on.length
     } else {
       if (props.group) {
-        if (!this[props.group]) {
+        if (!systems[props.group]) {
           initGroup(props.group)
         }
-        this[props.group].push(id)
+        systems[props.group].push(id)
       }
-      this.all.push(id)
+      systems.all.push(id)
     }
     props.compsBuffer = new Array(bufferLength)
-    this.push(props)
+    systems.push(props)
     return id
   }
+
+  var initGroup = function (name) {
+    systems[name] = []
+    system[name] = runGroup.bind(systems[name])
+  }
+
+  initGroup('all')
 
   var runSystem = function(ev) {
     if (ev && ev instanceof CustomEvent) {
@@ -126,14 +129,17 @@
   }
 
   // ***********************************************
+  // Listener
+  //
+  var listener = Kran.listenerNew
+
+  // ***********************************************
   // Entity
   //
-  var entity = Kran.entity = []
-
-  entity.new = function () {
+  var entity = Kran.entity = function () {
     // Entities wants to 'subtype' native Arrays but ECMAScript 5
     // does not support this. This wrapper function get the job done.
-    var ent = new Array(component.lenght)
+    var ent = new Array(components.lenght)
     ent.add = addComponent
     ent.remove = removeComponent
     ent.delete = removeEntity
@@ -147,8 +153,8 @@
 
   var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
     if (this[compId !== undefined]) throw new Error("The entity already has the component")
-    if (typeof(component[compId]) === 'function') {
-      this[compId] = new component[compId](arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+    if (typeof(components[compId]) === 'function') {
+      this[compId] = new components[compId](arg1, arg2, arg3, arg4, arg5, arg6, arg7)
     } else {
       this[compId] = { val: arg1 }
     }
