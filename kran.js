@@ -18,7 +18,7 @@
   var collectionsRequieringComp = []
 
   var component = Kran.component = function(comp) {
-    if (isFunc(comp)) {
+    if (isFunc(comp) || typeof(comp) === "string") {
       components.push(comp)
     } else if (comp === undefined) {
       components.push(true)
@@ -27,6 +27,11 @@
     }
     collectionsRequieringComp.push([])
     return components.length - 1
+  }
+
+  var checkComponentExistance = function (compId) {
+    if (components[compId] === undefined)
+      throw new Error("Component " + compId + " does no exist")
   }
 
   // ***********************************************
@@ -55,6 +60,10 @@
       entityCollections[key] = coll
       return coll
     }
+  }
+
+  Kran.getEntities = function (comps) {
+    return getOrCreateEntityCollection(comps).ents
   }
 
   // ***********************************************
@@ -151,11 +160,16 @@
   }
 
   var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+    checkComponentExistance(compId)
     if (this[compId !== undefined]) throw new Error("The entity already has the component")
-    if (typeof(components[compId]) === 'function') {
+    if (isFunc(components[compId])) {
       this[compId] = new components[compId](arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+    } else if (typeof(components[compId]) === "string") {
+      var obj = {}
+      obj[components[compId]] = arg1
+      this[compId] = obj
     } else {
-      this[compId] = { val: arg1 }
+      this[compId] = true
     }
     collectionsRequieringComp[compId].forEach(function (coll) {
       if (qualifiesForCollection(this, coll.comps)) {
@@ -174,6 +188,8 @@
   }
 
   var removeComponent = function(compId) {
+    checkComponentExistance(compId)
+    if (this[compId === undefined]) throw new Error("The entity already has the component")
     this[compId] = undefined
     this.belongsTo.forEach(function (collBelonging, elm) {
       if (!qualifiesForCollection(this, collBelonging.comps)) {
@@ -181,6 +197,7 @@
         elm.remove()
       }
     }, this)
+    return this
   }
 
   var removeEntity = function() {

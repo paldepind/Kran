@@ -145,7 +145,7 @@ describe 'Kran:', ->
       ent.add(comp)
 
     it 'can add non-constructor components to entitties', ->
-      comp = component()
+      comp = component("val")
       ent = entity().add(comp, 2)
       ent2 = entity().add(comp, 3)
       ent[comp].val.should.equal(2)
@@ -202,7 +202,7 @@ describe 'Kran:', ->
 
     it 'call systems arrival when entity gets added to collection', ->
       spy = sinon.spy((comp) ->
-        comp.val.should.equal(1)
+        comp.should.be.true
       )
       comp = component()
       comp2 = component()
