@@ -41,10 +41,7 @@ describe 'Kran:', ->
 
   describe 'system', ->
     it 'makes it possible to add new systems', ->
-      sys = system({})
-      sys.should.equal 0
-      sys = system({})
-      sys.should.equal 1
+      system({})
 
     it 'can run systems', () ->
       spy = sinon.spy()

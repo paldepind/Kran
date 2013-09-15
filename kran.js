@@ -69,9 +69,6 @@
   }
 
   var system = Kran.system = function(props) {
-    if (arguments.length == 1) {
-      return addSystem(arguments[0])
-    }
     for (var i = 0; i < arguments.length; i++) {
       addSystem(arguments[i])
     }
