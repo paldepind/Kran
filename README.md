@@ -65,7 +65,7 @@ var velocity = Kran.component(function (x, y) {
 Kran.system({
   // The system operates on entities with pos and vel components
   components: [position, velocity],
-  // When the system runs this functin will process every all entities
+  // When the system runs this functin will process every entity
   // that has the requested components
   every: function(pos, vel) {
     pos.x += vel.x
@@ -73,7 +73,7 @@ Kran.system({
   }
 }
 
-// Creates a new entity and adds two componets to it and initializes them
+// Creates a new entity, adds two componets to it and initializes them
 var ent = Kran.entity().add(position, 100, 50).add(velocity, 2, 4,)
 
 // Run all systems
