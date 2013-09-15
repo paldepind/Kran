@@ -69,6 +69,15 @@
   }
 
   var system = Kran.system = function(props) {
+    if (arguments.length == 1) {
+      return addSystem(arguments[0])
+    }
+    for (var i = 0; i < arguments.length; i++) {
+      addSystem(arguments[i])
+    }
+  }
+
+  var addSystem = function(props) {
     var id = systems.length
     var bufferLength = 1
     props.run = runSystem

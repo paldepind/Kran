@@ -46,25 +46,22 @@
       render.arc(circle.x, circle.y, circle.radius, 0, Math.PI*2, false)
       render.fill()
     },
-  })
-
-  system({ // Resize
+  },
+  { // Resize
     on: ['load', 'resize'],
     pre: function(ev) {
       render.canvas.width = document.body.clientWidth
       render.canvas.height = document.body.clientHeight
     }
-  })
-
-  system({ // Update mouse coordinates
+  },
+  { // Update mouse coordinates
     on: 'mousemove',
     pre: function(ev) {
       mouse.x = ev.x
       mouse.y = ev.y
     }
-  })
-
-  system({ // Follow mouse
+  },
+  { // Follow mouse
     components: [circle, followMouse],
     every: function(circle, followMouse) {
       var dx = mouse.x - circle.x
@@ -74,18 +71,16 @@
       circle.x += Math.cos(dir) * moveDist
       circle.y += Math.sin(dir) * moveDist
     }
-  })
-
-  system({ // Fade out disappering entities
+  },
+  { // Fade out disappering entities
     components: [disappering, color],
     every: function(dis, color, ent) {
       dis.curTime--
       color.a = dis.curTime / dis.time
       if (dis.curTime <= 0) { ent.delete(); }
     }
-  })
-
-  system({
+  },
+  { // Create explosion
     on: "explosion",
     pre: function(ev) {
       entity().add(circle, ev.x, ev.y, 10).add(color, 255, 80, 0)
@@ -95,9 +90,8 @@
       entity().add(circle, ev.x, ev.y, 1).add(color, 255, 255, 255)
                   .add(disappering, 20).add(growing, 1)
     }
-  })
-
-  system({
+  },
+  { // Countdown to and trigger explosion
     components: [circle, goingToExplodeIn],
     every: function(circle, time, ent) {
       time.val--
@@ -106,25 +100,22 @@
         ent.delete()
       }
     }
-  })
-
-  system({
+  },
+  { // Grow circle
     components: [circle, growing],
     every: function(circle, growing) {
       circle.radius += growing.speed
     }
-  })
-
-  system({ // Place bomb
+  },
+  { // Place bomb
     on: "click",
     pre: function(ev) {
       entity().add(circle, ev.x, ev.y, 10).add(color, 100, 0, 0)
                   .add(goingToExplodeIn, 100).add(pulsing, 3, 0.15)
                   .add(weight, 100)
     }
-  })
-
-  system({
+  },
+  { // Change size of pulsin circles
     components: [circle, pulsing],
     every: function(circle, pulsing) {
       circle.radius += pulsing.speed
@@ -134,9 +125,8 @@
         pulsing.curSize = 0
       }
     }
-  })
-
-  system({ // Detect collisions
+  },
+  { // Detect collisions
     components: [circle, weight],
     pre: function() {
       this.entities.forEach(function (ent1, elm) {
