@@ -36,8 +36,9 @@
 
   var EntityCollection = function(comps) {
     this.comps = comps
+    this.buffer = new Array(comps.length + 2)
     this.ents = new LinkedList()
-    this.listeners = {}
+    this.arrival = []
   }
 
   var getOrCreateEntityCollection = function(comps) {
@@ -76,32 +77,29 @@
 
   var addSystem = function(props) {
     var id = systems.length
-    var bufferLength = 1
     props.run = runSystem
 
     if (props.components !== undefined) {
       props.components = wrapInArray(props.components)
-      props.entities = getOrCreateEntityCollection(props.components).ents
-      bufferLength += props.components.length
+      props.coll = getOrCreateEntityCollection(props.components)
+      if (isFunc(props.arrival)) props.coll.arrival.push(props.arrival)
     }
     if (props.on) {
       props.on = wrapInArray(props.on)
       props.on.forEach(function (event) {
         window.addEventListener(event, props.run.bind(props))
       })
-      bufferLength += props.on.length
     } else {
-      if (props.group) {
-        if (!systems[props.group]) {
-          initGroup(props.group)
-        }
-        systems[props.group].push(id)
-      }
+      // Only systems not listening for events are put in the all group
       systems.all.push(id)
     }
-    props.compsBuffer = new Array(bufferLength)
+    if (props.group) {
+      if (!systems[props.group]) {
+        initGroup(props.group)
+      }
+      systems[props.group].push(id)
+    }
     systems.push(props)
-    return id
   }
 
   var initGroup = function (name) {
@@ -117,27 +115,21 @@
     }
     if (isFunc(this.pre)) this.pre(ev)
     if (isFunc(this.every)) {
-      this.entities.forEach(function (ent) { // Call every
-        callFuncWithCompsFromEnt(this.components, this.compsBuffer,
-                                 ent, this.every, ev)
+      this.coll.ents.forEach(function (ent) { // Call every
+        callFuncWithCompsFromEnt(this.coll, ent, this.every, ev)
       }, this)
     }
     if (isFunc(this.post)) this.post(ev)
   }
 
-  var callFuncWithCompsFromEnt = function(comps, buffer, ent, func, ev) {
-    if (ev) buffer[0] = ev
-    for (var i = 0; i < comps.length; i++) {
-      buffer[i + (ev ? 1 : 0)] = ent[comps[i]]
+  var callFuncWithCompsFromEnt = function(coll, ent, func, ev) {
+    if (ev) coll.buffer[0] = ev
+    for (var i = 0; i < coll.comps.length; i++) {
+      coll.buffer[i + (ev ? 1 : 0)] = ent[coll.comps[i]]
     }
-    buffer[i] = ent
-    func.apply(this, buffer)
+    coll.buffer[i] = ent
+    func.apply(this, coll.buffer)
   }
-
-  // ***********************************************
-  // Listener
-  //
-  var listener = Kran.listenerNew
 
   // ***********************************************
   // Entity
@@ -148,6 +140,7 @@
     var ent = new Array(components.lenght)
     ent.add = addComponent
     ent.remove = removeComponent
+    ent.trigger = triggerComponent
     ent.delete = removeEntity
     ent.belongsTo = new LinkedList()
     return ent
@@ -173,6 +166,9 @@
   }
 
   var addEntityToCollection = function(ent, coll) {
+    coll.arrival.forEach(function (func) {
+      callFuncWithCompsFromEnt(coll, ent, func)
+    })
     var collEntry = coll.ents.add(ent)
     ent.belongsTo.add(new CollectionBelonging(coll.comps, collEntry))
   }
@@ -200,6 +196,11 @@
       }
       return true
     })
+  }
+
+  var triggerComponent = function (compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+    this.add(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+    this.remove(compId)
   }
 
   // ***********************************************

@@ -200,3 +200,22 @@ describe 'Kran:', ->
       system.all()
       spy.should.have.been.calledOnce
 
+    it 'call systems arrival when entity gets added to collection', ->
+      spy = sinon.spy((comp) ->
+        comp.val.should.equal(1)
+      )
+      comp = component()
+      comp2 = component()
+      system({ components: [comp, comp2], arrival: spy })
+      spy.should.not.have.been.called
+      entity().add(comp, 1).add(comp2, 1)
+      spy.should.have.been.calledOnce
+
+    it 'allows triggering a component', ->
+      spy = sinon.spy()
+      comp = component()
+      comp2 = component()
+      system({ components: [comp, comp2], arrival: spy, every: spy })
+      entity().add(comp).trigger(comp2, 1)
+      system.all()
+      spy.should.have.been.calledOnce
