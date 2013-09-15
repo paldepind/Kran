@@ -9,7 +9,7 @@ _Note_: Kran is under heavy development, everything is work in progess.
 Why Kran?
 =========
 
-Kran is _flexible_
+It's _flexible_
 ------------------
 Kran is based upon the well tested ideas of entity component systems. By
 favoring composition over inheritance, seperation of data and game logic, loose
@@ -24,7 +24,7 @@ Kran provides nothing but an _architecture_ that can be used for any kind of
 game. All other decisions - like how to do rendering or physics - is up to the
 user. Kran can without any problems be used in conjunction with other libraries.
 
-Kran is _effortless_
+It's _effortless_
 --------------------
 Kran has a simple convinient API that makes common tasks very easy. It
 provides an answer on how to structure your code so that you can get your game
@@ -32,54 +32,56 @@ rolling quickly without being hindered later on by inflexibility or a cumbersome
 design making further expansions harder. It show you the way without getting in
 you way.
 
-Kran is _simple_
+It's _simple_
 ----------------
-Kran is a tiny library. It tries to do only what is abselutely necessary
+Kran is a tiny library. It tries to do only what is absolutely necessary
 and nothing more. That means you can learn it quickly and it won't impact your
 page loading time.
 
-Kran is _efficient_
+It's _efficient_
 -------------------
-Kran is dessigned from the buttom up with a careful and efficient usage of
+Kran is designed from the buttom up with a careful and efficient usage of
 datastructures and an API that doesn't introduce garbage during game runtime.
-Kran however is in an early stage of development and further optimizations
-are planned.
+Note however that Kran is in an early stage of development and further optimizations
+are reserved for the future as of know.
 
 
 Example
 ======
 
-    // Creates a new component named position
-    var position = Kran.component(function (x, y) {
-      this.x = x || 0
-      this.y = y || 0
-    }
+```javascript
+// Creates a new component named position
+var position = Kran.component(function (x, y) {
+  this.x = x || 0
+  this.y = y || 0
+}
 
-    var velocity = Kran.component(function (x, y) {
-      this.x = x || 0
-      this.y = y || 0
-    }
+var velocity = Kran.component(function (x, y) {
+  this.x = x || 0
+  this.y = y || 0
+}
 
-    // Creates a new system
-    Kran.system({
-      // The system operates on entities with pos and vel components
-      components: [position, velocity],
-      // When the system runs this functin will process every all entities
-      // that has the requested components
-      every: function(pos, vel) {
-        pos.x += vel.x
-        pos.y += vel.y
-      }
-    }
+// Creates a new system
+Kran.system({
+  // The system operates on entities with pos and vel components
+  components: [position, velocity],
+  // When the system runs this functin will process every all entities
+  // that has the requested components
+  every: function(pos, vel) {
+    pos.x += vel.x
+    pos.y += vel.y
+  }
+}
 
-    // Creates a new entity and adds and initializes two components to it
-    var ent = Kran.entity().add(position, 100, 50).add(velocity, 2, 4,)
+// Creates a new entity and adds two componets to it and initializes them
+var ent = Kran.entity().add(position, 100, 50).add(velocity, 2, 4,)
 
-    // Run all systems
-    Kran.system.all()
+// Run all systems
+Kran.system.all()
 
-    ent[position].x == 102 // true
-    ent[position].y == 54 // true
+ent[position].x == 102 // true
+ent[position].y == 54 // true
+```
 
 Documentation
 =============
