@@ -17,6 +17,13 @@ user. Kran can without problems be used in conjunction with other libraries.
 
 _Note_: Kran is under heavy development, everything is work in progess.
 
+Demo game
+=========
+Try the crazy demo game with explosion and blood! _Note_: It only works
+in modern browsers - currently only tested in Firefox and Chrome.
+[Click here to play](http://paldepind.github.io/Kran/examples/circlebomb/)
+![Screenshot](http://i.imgur.com/6N0gzYX.png "Screenshot of demo game")
+
 Why Kran?
 =========
 
