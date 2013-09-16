@@ -4,15 +4,16 @@ Kran
 Kran is an entity system micro-framework written in JavaScript primarely
 targeted at game development. Thanks to the well tested ideas of entity
 component systems which Kran is based upon it offers incredible _flexibility_.
-By favoring composition over inheritance, seperation of data and game logic,
-loose coupling, the pub/sub pattern and dependency injection for systems Kran
-provides an architecture that will get your game up to speed quickly and which
-will allow it to scale smoothly as it grows.
+An entity system favors composition over inheritance and enforces seperation of
+data and game logic. This leads to loose coupling. Kran furthermore provides
+means for using the pub/sub pattern, dependency injection for systems and
+a convenient API. That's sure is a lot of buzzwords but all in all it makes for
+an architecture that will get your game up to speed quickly and which
+will allow it to exand smoothly.
 
-Kran provides nothing but an _architecture_ that can be used for any kind of
+Kran provides nothing but an _architecture_ that can be used for any type of
 game. All other decisions - like how to do rendering or physics - is up to the
-user. Kran can without any problems be used in conjunction with other libraries
-any for any type of game.
+user. Kran can without problems be used in conjunction with other libraries.
 
 _Note_: Kran is under heavy development, everything is work in progess.
 
