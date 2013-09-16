@@ -21,7 +21,7 @@
     return createComponent(comp)
   }
 
-  var createComponet(comp) {
+  var createComponent = function(comp) {
     if (isFunc(comp) || typeof(comp) === "string") {
       components.push(comp)
     } else if (comp === undefined) {
@@ -129,7 +129,7 @@
     if (isFunc(this.pre)) this.pre(ev)
     if (isFunc(this.every)) {
       this.coll.ents.forEach(function (ent) { // Call every
-        callFuncWithCompsFromEnt(this.coll, ent, this.every, ev)
+        callFuncWithCompsFromEnt.call(this, this.coll, ent, this.every, ev)
       }, this)
     }
     if (isFunc(this.post)) this.post(ev)

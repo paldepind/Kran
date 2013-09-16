@@ -33,9 +33,7 @@ describe 'Kran:', ->
       comp1 = component()
 
     it 'handles a single non-array component', ->
-      sys = system({
-        components: comp
-      })
+      sys = system({ components: comp })
       entity().add(comp)
       system.all()
 
@@ -43,9 +41,10 @@ describe 'Kran:', ->
       spy = sinon.spy((foo, bar) ->
         foo.should.be.true
         bar.horse.should.equal(4)
+      )
       c = component({
-            foo: ;
-            bar: "horse"
+        foo: undefined
+        bar: "horse"
       })
       system({ components: [c.foo, c.bar], arrical: spy })
       entity().add(c.foo).add(bar, 4)
@@ -139,7 +138,12 @@ describe 'Kran:', ->
       comp2 = component()
       sys = system({ components: [comp, comp2] })
       sys2 = system({ components: [comp, comp2] })
-      #system[sys].entities.should.equal(system[sys2].entities)
+
+    it 'binds this correctly inside the every hook', ->
+      comp = component()
+      system({ components: comp, foo: "bar", every: () -> @foo.should.equal("bar") })
+      entity().add(comp)
+      system.all()
 
   describe 'entity', ->
     it 'allows for creation of new entities', ->
