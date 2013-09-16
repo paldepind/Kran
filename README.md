@@ -100,3 +100,11 @@ Documentation
 *Kran.system*
 
 *Kran.entity*
+
+To do
+=====
+
+* Add benchmark suite
+* Add object pooling for internal and external usage
+* More example games
+* Socket.IO integration (highly speculative)
