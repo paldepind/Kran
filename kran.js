@@ -18,6 +18,10 @@
   var collectionsRequieringComp = []
 
   var component = Kran.component = function(comp) {
+    return createComponent(comp)
+  }
+
+  var createComponet(comp) {
     if (isFunc(comp) || typeof(comp) === "string") {
       components.push(comp)
     } else if (comp === undefined) {
