@@ -42,14 +42,30 @@
   var player = component()
   var monster = component()
   var explosion = component()
+  var background = component()
 
   // Systems
   system({ // Render
     components: [circle, color],
+    background: [], // Store entities that should be rendered in the background
     pre: function() {
+      var ent
       render.clearRect(0, 0, render.canvas.width, render.canvas.height)
+      while (this.background.length > 0) {
+        ent = this.background.pop()
+        if (ent[circle] && ent[color])
+          this.renderCircle(ent[circle], ent[color])
+      }
     },
-    every: function(circle, color) {
+    every: function(circle, color, ent) {
+      if (ent[background]) {
+        this.background.push(ent)
+      } else {
+        this.renderCircle(circle, color)
+      }
+    },
+    renderCircle: function(circle, color) {
+      if (circle.radius <= 0) return;
       render.beginPath()
       render.fillStyle = colorString(color.r, color.g, color.b, color.a)
       render.arc(circle.x, circle.y, circle.radius, 0, Math.PI*2, false)
@@ -112,9 +128,8 @@
   },
   { // Grow circle
     components: [circle, growing],
-    every: function(circle, growing, ent) {
-      circle.radius += growing.speed
-      if (circle.radius < 0) ent.delete()
+    every: function(c, growing, ent) {
+      c.radius += growing.speed
     }
   },
   { // Place bomb
@@ -152,16 +167,18 @@
     components: [collided, circle, health],
     arrival: function(collided, circle, h, ent) {
       if (collided.with[explosion]) {
-    console.log(damage)
         dealDamage(h, circle, collided.with[damage], ent)
       }
     }
   },
-  {
+  { // Makes the player take damage from monsters
     components: [collided, circle, health, player],
     arrival: function(collided, circle, h, player, ent) {
       if (collided.with[monster]) {
         dealDamage(h, circle, collided.with[damage], ent)
+        if (!ent[health]) {
+          alert("You died! Refresh the page to replay")
+        }
       }
     }
   })
@@ -170,14 +187,15 @@
 
   var playerEnt = entity().add(circle, 600, 152, 20).add(color).add(player)
               .add(weight, 10).add(follow, mouse, 8).add(health, 500)
-  var timeToMonster = 200;
-  var timeBetweenMonsters = 200
+  var timeToMonster = 100;
+  var timeBetweenMonsters = 100
 
   var gameLoop = function() {
     system.all()
     requestAnimationFrame(gameLoop)
     if (--timeToMonster <= 0) {
       createMonster();
+      timeBetweenMonsters -= 10
       timeToMonster = Math.max(timeBetweenMonsters, 50)
     }
   }
@@ -194,7 +212,7 @@
     var green = Math.floor(50 + 150 * Math.random())
     var blue = Math.floor(50 + 150 * Math.random())
     entity().add(circle, x, y, radius).add(color, red, green, blue).add(weight, 50)
-            .add(follow, playerEnt[circle], speed).add(health, 110).add(damage, 4).add(monster)
+            .add(follow, playerEnt[circle], speed).add(health, 110).add(damage, 8).add(monster)
   }
 
   function dealDamage(h, circle, damage, ent) {
@@ -204,7 +222,7 @@
       if (ent[follow]) ent.remove(follow)
       if (ent[weight]) ent.remove(weight)
       ent.add(disappering, 30)
-      timeBetweenMonsters -= 5
+      timeBetweenMonsters += 5
     }
     bloodSplatter(circle)
   }
@@ -216,6 +234,7 @@
             .add(color, 155, 0, 0)
             .add(growing, -0.04)
             .add(disappering, 400)
+            .add(background)
   }
 
   function colorString(r, g, b, a) {
