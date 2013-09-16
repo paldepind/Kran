@@ -69,41 +69,42 @@ Example
 ======
 
 ```javascript
-// Creates a new component named position
-var position = Kran.component(function (x, y) {
-  this.x = x || 0
-  this.y = y || 0
-}
+var GRAVITY = 9.8
 
 var velocity = Kran.component(function (x, y) {
   this.x = x || 0
   this.y = y || 0
 }
 
-// Creates a new system
+// Create a weight component using the shorhand syntax for components
+// with just one property (we call it val in lack of a better name)
+var weight = component("val")
+
+// Creates a new system that accelerates objects with weight towards the ground
 Kran.system({
-  // The system operates on entities with pos and vel components
-  components: [position, velocity],
-  // When the system runs this functin will process every entity
-  // that has the requested components
-  every: function(pos, vel) {
-    pos.x += vel.x
-    pos.y += vel.y
+  // The system operates on entities with velocity and weight components
+  components: [velocity, weight],
+  // When the system runs this functin will process every entity that has the
+  // requested components, the components will be given as arguments to the function
+  every: function(velocity, weight) {
+    velocity.y += weight.val * GRAVITY
   }
 }
 
 // Creates a new entity, adds two componets to it and initializes them
-var ent = Kran.entity().add(position, 100, 50).add(velocity, 2, 4,)
+var ent = Kran.entity().add(velocity, 100, 0).add(weight, 10)
 
-// Run all systems
+// Run all systems (this typically happens inside the main loop)
 Kran.system.all()
 
-ent[position].x == 102 // true
-ent[position].y == 54 // true
+// The velocity will be accelerated one time step forward
+ent[velocity].y === 98 // true
 ```
 
 Documentation
 =============
+
+Not there yet.
 
 *Kran.component*
 
