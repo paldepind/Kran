@@ -2,7 +2,17 @@ Kran
 ====
 
 Kran is an entity system micro-framework written in JavaScript primarely
-targeted at game development.
+targeted at game development. Thanks to the well tested ideas of entity
+component systems which Kran is based upon it offers incredible _flexibility_.
+By favoring composition over inheritance, seperation of data and game logic,
+loose coupling, the pub/sub pattern and dependency injection for systems Kran
+provides an architecture that will get your game up to speed quickly and which
+will allow it to scale smoothly as it grows.
+
+Kran provides nothing but an _architecture_ that can be used for any kind of
+game. All other decisions - like how to do rendering or physics - is up to the
+user. Kran can without any problems be used in conjunction with other libraries
+any for any type of game.
 
 _Note_: Kran is under heavy development, everything is work in progess.
 
@@ -11,32 +21,30 @@ Why Kran?
 
 It's _flexible_
 ------------------
-Kran is based upon the well tested ideas of entity component systems. By
-favoring composition over inheritance, seperation of data and game logic, loose
-coupling and dependency injection Kran provides a lot of flexibility for game
-development. Unlike the case with object oriented programming data isn't tied
-together with the functions that processes it in restricting objects/classes
-and it doesn't have to fit inside a hiearchy either. Entities are simply build
-out components in any way desireable. Systems just declare what data they
-require an they'll automatically be handed all entities that posseses it.
-
-Kran provides nothing but an _architecture_ that can be used for any kind of
-game. All other decisions - like how to do rendering or physics - is up to the
-user. Kran can without any problems be used in conjunction with other libraries.
+Kran gains most of its flexibility from the entity system architechture it is
+an implementation of. Unlike the case with object oriented programming data
+isn't tied together with the functions that processes it in restricting
+objects and it doesn't have to fit inside a class hierarchy either. Entities
+are simply build out data components in any way desireable. Systems just specify
+what components they require an they'll automatically be handed all entities that
+satisfy the declared requirements. This allows for maximum flexibility and
+reuseability - nothing is tightly coupled, everything can be mixed and matched.
 
 It's _effortless_
 --------------------
 Kran has a simple convinient API that makes common tasks very easy. It
-provides an answer on how to structure your code so that you can get your game
-rolling quickly without being hindered later on by inflexibility or a cumbersome
-design making further expansions harder. It show you the way without getting in
-you way.
+provides an answer on how to structure your code so that you can worry about
+actually getting your game rolling and without being hindered later on by
+inflexibility or a cumbersome design making further expansions harder. It show
+you the way without getting in you way.
 
 It's _simple_
 ----------------
-Kran is a tiny library. It tries to do only what is absolutely necessary
-and nothing more. That means you can learn it quickly and it won't impact your
-page loading time.
+We aren't kidding when we claim that Kran is a micro-framework. We makes other
+so called tiny libraries look gigantic. Kran gives you an architecture and
+that's all. It tries to do only what is absolutely necessary and nothing more.
+That means you can learn it quickly and easily get a complete understanding of how
+it works. It won't impact your page loading time in any noticeable way either.
 
 It's _efficient_
 -------------------
