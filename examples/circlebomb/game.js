@@ -82,8 +82,8 @@
   { // Update mouse coordinates
     on: 'mousemove',
     pre: function(ev) {
-      mouse.x = ev.x
-      mouse.y = ev.y
+      mouse.x = ev.clientX
+      mouse.y = ev.clientY
     }
   },
   { // Follow mouse
@@ -135,7 +135,7 @@
   { // Place bomb
     on: "mousedown",
     pre: function(ev) {
-      entity().add(circle, ev.x, ev.y, 10).add(color, 100, 0, 0)
+      entity().add(circle, ev.clientX, ev.clientY, 10).add(color, 100, 0, 0)
                   .add(goingToExplode, 100).add(pulsing, 3, 0.15)
                   .add(weight, 100)
     }
@@ -186,7 +186,7 @@
   // Game globals
 
   var playerEnt = entity().add(circle, 600, 152, 20).add(color).add(player)
-              .add(weight, 10).add(follow, mouse, 8).add(health, 500)
+                 .add(weight, 10).add(follow, mouse, 8).add(health, 500)
   var timeToMonster = 100;
   var timeBetweenMonsters = 100
 
