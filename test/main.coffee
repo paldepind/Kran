@@ -47,7 +47,7 @@ describe 'Kran:', ->
         bar: "horse"
       })
       system({ components: [c.foo, c.bar], arrical: spy })
-      entity().add(c.foo).add(bar, 4)
+      entity().add(c.foo).add(c.bar, 4)
 
   describe 'system', ->
     it 'makes it possible to add new systems', ->

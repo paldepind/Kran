@@ -18,7 +18,16 @@
   var collectionsRequieringComp = []
 
   var component = Kran.component = function(comp) {
-    return createComponent(comp)
+    if (typeof(comp) === "object") {
+      var obj = {}
+      for (prop in comp) {
+        obj[prop] = createComponent(comp[prop])
+        console.log(prop + " : " + obj[prop])
+      }
+      return obj
+    } else {
+      return createComponent(comp)
+    }
   }
 
   var createComponent = function(comp) {
