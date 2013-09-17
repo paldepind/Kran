@@ -145,7 +145,7 @@ describe 'Kran:', ->
 
   describe 'entity', ->
     it 'allows for creation of new entities', ->
-      entity().should.be.an('array')
+      entity().should.be.an('object')
 
     it 'can add constructor components to entities', ->
       spy = sinon.spy()
@@ -161,8 +161,8 @@ describe 'Kran:', ->
       comp = component("val")
       ent = entity().add(comp, 2)
       ent2 = entity().add(comp, 3)
-      ent[comp].val.should.equal(2)
-      ent2[comp].val.should.equal(3)
+      ent.get(comp).val.should.equal(2)
+      ent2.get(comp).val.should.equal(3)
 
     it 'passes the arguments given to add along to the constructor', ->
       Spy = sinon.spy((arg1, arg2, arg3) ->
@@ -202,6 +202,17 @@ describe 'Kran:', ->
       system.all()
       spy.should.have.been.calledOnce
 
+    it 'allows removal of components using component instances', ->
+      spy = sinon.spy((comp, ent) ->
+        ent.remove(comp)
+      )
+      comp = component(() -> @v = 1)
+      sys = system({ components: comp, every: spy })
+      ent = entity().add(comp)
+      system.all()
+      system.all()
+      spy.should.have.been.calledOnce
+
     it 'makes it possible to delete entities', ->
       spy = sinon.spy()
       comp = component(() -> @v = 1)
@@ -215,7 +226,7 @@ describe 'Kran:', ->
 
     it 'call systems arrival when entity gets added to collection', ->
       spy = sinon.spy((comp) ->
-        comp.should.be.true
+        comp.should.be.a.object
       )
       comp = component()
       comp2 = component()

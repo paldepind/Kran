@@ -18,7 +18,6 @@
   var collectionsRequieringComp = []
 
   var component = Kran.component = function(comp) {
-<<<<<<< HEAD
     if (typeof(comp) === "object") {
       var obj = {}
       for (prop in comp) {
@@ -31,8 +30,6 @@
   }
 
   var createComponent = function(comp) {
-=======
->>>>>>> ffc181e8a53dcbcc25b11f6b2a2dbbb9117672cc
     if (isFunc(comp) || typeof(comp) === "string") {
       components.push(comp)
     } else if (comp === true || comp === undefined) {
@@ -45,8 +42,11 @@
   }
 
   var checkComponentExistance = function (compId) {
-    if (components[compId] === undefined)
+    if (components[compId] !== undefined) {
+      return compId
+    } else {
       throw new Error("Component " + compId + " does no exist")
+    }
   }
 
   // ***********************************************
@@ -143,7 +143,7 @@
   var callFuncWithCompsFromEnt = function(coll, ent, func, ev) {
     if (ev) coll.buffer[0] = ev
     for (var i = 0; i < coll.comps.length; i++) {
-      coll.buffer[i + (ev ? 1 : 0)] = ent[coll.comps[i]]
+      coll.buffer[i + (ev ? 1 : 0)] = ent.comps[coll.comps[i]]
     }
     coll.buffer[i] = ent
     func.apply(this, coll.buffer)
@@ -152,40 +152,69 @@
   // ***********************************************
   // Entity
   //
-  var entity = Kran.entity = function () {
-    // Entities wants to 'subtype' native Arrays but ECMAScript 5
-    // does not support this. This wrapper function get the job done.
-    var ent = new Array(components.lenght)
-    ent.add = addComponent
-    ent.remove = removeComponent
-    ent.trigger = triggerComponent
-    ent.delete = removeEntity
-    ent.belongsTo = new LinkedList()
-    return ent
+  var Entity = function() {
+    this.comps = new Array(components.length)
+    this.belongsTo = new LinkedList()
   }
 
-  var CollectionBelonging = function (comps, entry) {
-    this.comps = comps; this.entry = entry
-  }
-
-  var addComponent = function(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
-    checkComponentExistance(compId)
-    if (this[compId !== undefined]) throw new Error("The entity already has the component")
+  Entity.prototype.add = function(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+    compId = processCompId(compId)
+    if (this.comps[compId] !== undefined) throw new Error("The entity already has the component")
     if (isFunc(components[compId])) {
-      this[compId] = new components[compId](arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-    } else if (typeof(components[compId]) === "string") {
+      this.comps[compId] = new components[compId](arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+    } else if (typeof components[compId] === "string") {
       var obj = {}
       obj[components[compId]] = arg1
-      this[compId] = obj
+      this.comps[compId] = obj
     } else {
-      this[compId] = true
+      this.comps[compId] = {}
     }
+    this.comps[compId].id = compId
     collectionsRequieringComp[compId].forEach(function (coll) {
       if (qualifiesForCollection(this, coll.comps)) {
         addEntityToCollection(this, coll)
       }
     }, this)
     return this
+  }
+
+  Entity.prototype.get = function(compId) {
+    compId = processCompId(compId)
+    return this.comps[compId]
+  }
+
+  Entity.prototype.remove = function(compId) {
+    compId = processCompId(compId)
+    if (this.comps[compId] === undefined) throw new Error("The entity already has the component")
+    this.comps[compId] = undefined
+    this.belongsTo.forEach(function (collBelonging, elm) {
+      if (!qualifiesForCollection(this, collBelonging.comps)) {
+        collBelonging.entry.remove()
+        elm.remove()
+      }
+    }, this)
+    return this
+  }
+
+  Entity.prototype.trigger = function (compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+    compId = processCompId(compId)
+    this.add(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+    this.remove(compId)
+  }
+
+  Entity.prototype.delete = function() {
+    this.belongsTo.forEach(function (collBelonging, elm) {
+      collBelonging.entry.remove()
+    })
+  }
+
+  var entity = Kran.entity = function () {
+    var ent = new Entity()
+    return ent
+  }
+
+  var CollectionBelonging = function (comps, entry) {
+    this.comps = comps; this.entry = entry
   }
 
   var addEntityToCollection = function(ent, coll) {
@@ -196,37 +225,23 @@
     ent.belongsTo.add(new CollectionBelonging(coll.comps, collEntry))
   }
 
-  var removeComponent = function(compId) {
-    checkComponentExistance(compId)
-    if (this[compId === undefined]) throw new Error("The entity already has the component")
-    this[compId] = undefined
-    this.belongsTo.forEach(function (collBelonging, elm) {
-      if (!qualifiesForCollection(this, collBelonging.comps)) {
-        collBelonging.entry.remove()
-        elm.remove()
-      }
-    }, this)
-    return this
-  }
-
-  var removeEntity = function() {
-    this.belongsTo.forEach(function (collBelonging, elm) {
-      collBelonging.entry.remove()
-    })
+  var processCompId = function(compId) {
+    if (typeof(compId) === "number") { 
+      return checkComponentExistance(compId)
+    } else if (typeof(compId) == "object" &&
+               compId.id !== undefined) {
+      return checkComponentExistance(compId.id)
+    }
+    throw new TypeError("Component " + compId + " does not contain any id")
   }
 
   var qualifiesForCollection = function (ent, comps) {
     return comps.every(function (compId) {
-      if (ent[compId] === undefined) {
+      if (ent.comps[compId] === undefined) {
         return false
       }
       return true
     })
-  }
-
-  var triggerComponent = function (compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
-    this.add(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-    this.remove(compId)
   }
 
   // ***********************************************

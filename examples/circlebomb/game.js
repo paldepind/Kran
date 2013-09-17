@@ -52,12 +52,12 @@
       render.clearRect(0, 0, render.canvas.width, render.canvas.height)
       while (this.background.length > 0) {
         ent = this.background.pop()
-        if (ent[circle] && ent[color])
-          this.renderCircle(ent[circle], ent[color])
+        if (ent.get(circle) && ent.get(color))
+          this.renderCircle(ent.get(circle), ent.get(color))
       }
     },
     every: function(circle, color, ent) {
-      if (ent[background]) {
+      if (ent.get(background)) {
         this.background.push(ent)
       } else {
         this.renderCircle(circle, color)
@@ -156,56 +156,32 @@
       Kran.getEntities([circle, weight]).forEach(function (ent1, elm) {
         var ent2
         while((elm = elm.next) && (ent2 = elm.data)) {
-          if (!ent1[weight]) break;
+          if (!ent1.get(weight)) break;
           handleCollision(ent1, ent2)
         }
       }, this)
     }
-<<<<<<< HEAD
-  },
-  { // Makes explosions deal damage
-    components: [c.collided, c.circle, c.health],
-=======
   })
-  s({ // Make explosions deal damage
+  s({ // Makes explosions deal damage
     components: [collided, circle, health],
->>>>>>> ffc181e8a53dcbcc25b11f6b2a2dbbb9117672cc
-    arrival: function(collided, circle, h, ent) {
-      if (collided.with[explosion]) {
-        dealDamage(h, circle, collided.with[damage], ent)
+    arrival: function(collided, circle, health, ent) {
+      if (collided.with.get(explosion)) {
+        dealDamage(health, circle, collided.with.get(damage), ent)
       }
     }
-<<<<<<< HEAD
-  },
-  { // Makes the player take damage from monsters
-    components: [c.collided, c.circle, c.health, c.player],
-    arrival: function(collided, circle, health, player, ent) {
-      if (collided.with[c.monster]) {
-        dealDamage(health, circle, collided.with[c.damage], ent)
-=======
   })
   s({ // Makes the player take damage from monsters
     components: [collided, circle, health, player],
-    arrival: function(collided, circle, h, player, ent) {
-      if (collided.with[monster]) {
-        dealDamage(h, circle, collided.with[damage], ent)
->>>>>>> ffc181e8a53dcbcc25b11f6b2a2dbbb9117672cc
+    arrival: function(collided, circle, health, player, ent) {
+      if (collided.with.get(monster)) {
+        dealDamage(health, circle, collided.with.get(damage), ent)
       }
     }
   })
 
-<<<<<<< HEAD
   // Global entities
-  var playerEnt = entity().add(c.circle, 600, 152, 20).add(c.color).add(c.player)
-                 .add(c.weight, 10).add(c.follow, mouse, 8).add(c.health, 500)
-=======
-  // Game globals
-
   var playerEnt = e().add(circle, 600, 152, 20).add(color).add(player)
                      .add(weight, 10).add(follow, mouse, 8).add(health, 500)
-  var timeToMonster = 100;
-  var timeBetweenMonsters = 100
->>>>>>> ffc181e8a53dcbcc25b11f6b2a2dbbb9117672cc
 
   var gameLoop = function() {
     s.all()
@@ -229,18 +205,18 @@
     var green = Math.floor(50 + 150 * Math.random())
     var blue = Math.floor(50 + 150 * Math.random())
     e().add(circle, x, y, radius).add(color, red, green, blue).add(weight, 50)
-            .add(follow, playerEnt[circle], speed).add(health, 110).add(damage, 8).add(monster)
+       .add(follow, playerEnt.get(circle), speed).add(health, 110).add(damage, 8).add(monster)
   }
 
-  function dealDamage(h, circle, damage, ent) {
-    h.left -= damage.giving
-    if (h.left <= 0) {
-      if (ent[player]) {
+  function dealDamage(health, circle, damage, ent) {
+    health.left -= damage.giving
+    if (health.left <= 0) {
+      if (ent.get(player)) {
         alert("You died! Refresh the page to replay")
       }
       ent.remove(health)
-      if (ent[follow]) ent.remove(follow)
-      if (ent[weight]) ent.remove(weight)
+      if (ent.get(follow)) ent.remove(follow)
+      if (ent.get(weight)) ent.remove(weight)
       ent.add(disappering, 30)
       timeBetweenMonsters += 5
     }
@@ -262,8 +238,8 @@
   }
 
   function handleCollision(ent1, ent2) {
-    var pos1 = ent1[circle], pos2 = ent2[circle]
-      , weight1 = ent1[weight].val, weight2 = ent2[weight].val
+    var pos1 = ent1.get(circle), pos2 = ent2.get(circle)
+      , weight1 = ent1.get(weight).val, weight2 = ent2.get(weight).val
       , dx = pos2.x - pos1.x
       , dy = pos2.y - pos1.y
       , overlap = pos1.radius + pos2.radius - Math.sqrt(dx*dx+dy*dy)
