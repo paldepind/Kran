@@ -18,6 +18,7 @@
   var collectionsRequieringComp = []
 
   var component = Kran.component = function(comp) {
+<<<<<<< HEAD
     if (typeof(comp) === "object") {
       var obj = {}
       for (prop in comp) {
@@ -30,6 +31,8 @@
   }
 
   var createComponent = function(comp) {
+=======
+>>>>>>> ffc181e8a53dcbcc25b11f6b2a2dbbb9117672cc
     if (isFunc(comp) || typeof(comp) === "string") {
       components.push(comp)
     } else if (comp === true || comp === undefined) {
@@ -91,12 +94,6 @@
   }
 
   var system = Kran.system = function(props) {
-    for (var i = 0; i < arguments.length; i++) {
-      addSystem(arguments[i])
-    }
-  }
-
-  var addSystem = function(props) {
     var id = systems.length
     props.run = runSystem
 
