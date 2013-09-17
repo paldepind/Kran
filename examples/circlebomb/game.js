@@ -6,6 +6,8 @@
   // Globals
   var render = document.getElementById('render').getContext('2d')
   var mouse = { x: 0, y: 0 }
+  var timeToMonster = 100;
+  var timeBetweenMonsters = 100
 
   // Components
 
@@ -162,7 +164,7 @@
       }, this)
     }
   },
-  { // Make explosions deal damage
+  { // Makes explosions deal damage
     components: [c.collided, c.circle, c.health],
     arrival: function(collided, circle, h, ent) {
       if (collided.with[c.explosion]) {
@@ -172,19 +174,16 @@
   },
   { // Makes the player take damage from monsters
     components: [c.collided, c.circle, c.health, c.player],
-    arrival: function(collided, circle, h, player, ent) {
+    arrival: function(collided, circle, health, player, ent) {
       if (collided.with[c.monster]) {
-        dealDamage(h, circle, collided.with[c.damage], ent)
+        dealDamage(health, circle, collided.with[c.damage], ent)
       }
     }
   })
 
-  // Game globals
-
+  // Global entities
   var playerEnt = entity().add(c.circle, 600, 152, 20).add(c.color).add(c.player)
                  .add(c.weight, 10).add(c.follow, mouse, 8).add(c.health, 500)
-  var timeToMonster = 100;
-  var timeBetweenMonsters = 100
 
   var gameLoop = function() {
     system.all()
