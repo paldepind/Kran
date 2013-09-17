@@ -22,7 +22,6 @@
       var obj = {}
       for (prop in comp) {
         obj[prop] = createComponent(comp[prop])
-        console.log(prop + " : " + obj[prop])
       }
       return obj
     } else {
@@ -33,7 +32,7 @@
   var createComponent = function(comp) {
     if (isFunc(comp) || typeof(comp) === "string") {
       components.push(comp)
-    } else if (comp === undefined) {
+    } else if (comp === true || comp === undefined) {
       components.push(true)
     } else {
       throw new TypeError("Argument " + comp + " is given but not a function")

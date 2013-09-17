@@ -145,6 +145,16 @@ describe 'Kran:', ->
       entity().add(comp)
       system.all()
 
+    it 'calls systems in order of creation', ->
+      spy1 = sinon.spy()
+      spy2 = sinon.spy()
+      comp = component()
+      system({ components: comp, pre: spy1 })
+      system({ components: comp, pre: spy2 })
+      entity().add(comp)
+      system.all()
+      spy1.should.have.been.calledBefore(spy2)
+
   describe 'entity', ->
     it 'allows for creation of new entities', ->
       entity().should.be.an('array')
