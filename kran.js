@@ -41,7 +41,7 @@
     return components.length - 1
   }
 
-  var checkComponentExistance = function (compId) {
+  var checkComponentExistence = function (compId) {
     if (components[compId] !== undefined) {
       return compId
     } else {
@@ -59,6 +59,10 @@
     this.buffer = new Array(comps.length + 2)
     this.ents = new LinkedList()
     this.arrival = []
+    comps.forEach(function (compId) {
+      checkComponentExistence(compId)
+      collectionsRequieringComp[compId].push(this)
+    }, this)
   }
 
   var getOrCreateEntityCollection = function(comps) {
@@ -66,14 +70,8 @@
     if (entityCollections[key]) {
       return entityCollections[key]
     } else {
-      var coll = new EntityCollection(comps)
-      comps.forEach(function (compId) {
-        if (components[compId] === undefined)
-          throw new Error("Component " + compId + " does no exist")
-        collectionsRequieringComp[compId].push(coll)
-      })
-      entityCollections[key] = coll
-      return coll
+      entityCollections[key] = new EntityCollection(comps)
+      return entityCollections[key] 
     }
   }
 
@@ -183,6 +181,16 @@
     return this.comps[compId]
   }
 
+  Entity.prototype.get = function(compId) {
+    compId = processCompId(compId)
+    return this.comps[compId]
+  }
+
+  Entity.prototype.has = function(compId) {
+    compId = processCompId(compId)
+    return this.comps[compId] !== undefined
+  }
+
   Entity.prototype.remove = function(compId) {
     compId = processCompId(compId)
     if (this.comps[compId] === undefined) throw new Error("The entity already has the component")
@@ -227,10 +235,10 @@
 
   var processCompId = function(compId) {
     if (typeof(compId) === "number") { 
-      return checkComponentExistance(compId)
+      return checkComponentExistence(compId)
     } else if (typeof(compId) == "object" &&
                compId.id !== undefined) {
-      return checkComponentExistance(compId.id)
+      return checkComponentExistence(compId.id)
     }
     throw new TypeError("Component " + compId + " does not contain any id")
   }

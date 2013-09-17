@@ -21,6 +21,7 @@
   var monster = c()
   var explosion = c()
   var background = c()
+  var exploded = c()
   var follow = c(function (pos, s) {
     this.pos = pos;
     this.speed = s
@@ -105,14 +106,15 @@
     }
   })
   s({ // Create explosion
-    on: "explosion",
-    pre: function(ev) {
-      e().add(circle, ev.x, ev.y, 10).add(color, 255, 80, 0).add(damage, 10).add(explosion)
-              .add(disappering, 20).add(growing, 5).add(weight, Infinity)
-      e().add(circle, ev.x, ev.y, 7).add(color, 255, 255, 0)
-              .add(disappering, 20).add(growing, 3.5)
-      e().add(circle, ev.x, ev.y, 1).add(color, 255, 255, 255)
-              .add(disappering, 20).add(growing, 1)
+    components: [exploded, circle],
+    arrival: function(exploded, circle) {
+      var x = circle.x, y = circle.y
+      e().add(circle, x, y, 10).add(color, 255, 80, 0).add(damage, 10).add(explosion)
+         .add(disappering, 20).add(growing, 8).add(weight, Infinity)
+      e().add(circle, x, y, 7).add(color, 255, 255, 0)
+         .add(disappering, 20).add(growing, 6)
+      e().add(circle, x, y, 1).add(color, 255, 255, 255)
+         .add(disappering, 20).add(growing, 2)
     }
   })
   s({ // Countdown to and trigger explosion
@@ -120,7 +122,7 @@
     every: function(circle, gointToExplode, ent) {
       gointToExplode.in -= 1
       if (gointToExplode.in <= 0) {
-        Kran.trigger("explosion", { x: circle.x, y: circle.y } )
+        ent.trigger(exploded)
         ent.delete()
       }
     }
@@ -156,16 +158,24 @@
       Kran.getEntities([circle, weight]).forEach(function (ent1, elm) {
         var ent2
         while((elm = elm.next) && (ent2 = elm.data)) {
-          if (!ent1.get(weight)) break;
+          if (!ent1.has(weight)) break;
           handleCollision(ent1, ent2)
         }
       }, this)
     }
   })
+  s({ // Makes one bombs explosion trigger another bomb
+    components: [collided, goingToExplode],
+    arrival: function(collided, goingToExplode) {
+      if (collided.with.has(explosion)) {
+        goingToExplode.in = 0
+      }
+    }
+  })
   s({ // Makes explosions deal damage
     components: [collided, circle, health],
     arrival: function(collided, circle, health, ent) {
-      if (collided.with.get(explosion)) {
+      if (collided.with.has(explosion)) {
         dealDamage(health, circle, collided.with.get(damage), ent)
       }
     }
@@ -173,8 +183,17 @@
   s({ // Makes the player take damage from monsters
     components: [collided, circle, health, player],
     arrival: function(collided, circle, health, player, ent) {
-      if (collided.with.get(monster)) {
+      if (collided.with.has(monster)) {
         dealDamage(health, circle, collided.with.get(damage), ent)
+      }
+    }
+  })
+  s({
+    pre: function() {
+      if (--timeToMonster <= 0) {
+        createMonster();
+        timeBetweenMonsters -= 10
+        timeToMonster = Math.max(timeBetweenMonsters, 50)
       }
     }
   })
@@ -186,11 +205,6 @@
   var gameLoop = function() {
     s.all()
     requestAnimationFrame(gameLoop)
-    if (--timeToMonster <= 0) {
-      createMonster();
-      timeBetweenMonsters -= 10
-      timeToMonster = Math.max(timeBetweenMonsters, 50)
-    }
   }
   gameLoop()
 
@@ -211,19 +225,19 @@
   function dealDamage(health, circle, damage, ent) {
     health.left -= damage.giving
     if (health.left <= 0) {
-      if (ent.get(player)) {
+      if (ent.has(player)) {
         alert("You died! Refresh the page to replay")
       }
       ent.remove(health)
-      if (ent.get(follow)) ent.remove(follow)
-      if (ent.get(weight)) ent.remove(weight)
+      if (ent.has(follow)) ent.remove(follow)
+      if (ent.has(weight)) ent.remove(weight)
       ent.add(disappering, 30)
       timeBetweenMonsters += 5
     }
-    bloodSplatter(circle)
+    createBloodSplatter(circle)
   }
 
-  function bloodSplatter(circ) {
+  function createBloodSplatter(circ) {
     var x = circ.x - circ.radius / 2 + circ.radius * Math.random()
     var y = circ.y - circ.radius / 2 + circ.radius * Math.random()
     e().add(circle, x, y, circ.radius * Math.random())
@@ -251,6 +265,7 @@
       if (isNaN(distribution1)) distribution1 = 1
       distribution2 = weight1 / totalWeight
       if (isNaN(distribution2)) distribution2 = 1
+      if (distribution1 === 1 && distribution2 === 1) return
       pos1.x -= Math.cos(dir) * (overlap * distribution1)
       pos1.y -= Math.sin(dir) * (overlap * distribution1)
       pos2.x += Math.cos(dir) * (overlap * distribution2)
