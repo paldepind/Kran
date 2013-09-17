@@ -76,6 +76,7 @@
   }
 
   Kran.getEntities = function (comps) {
+    comps = wrapInArray(comps)
     return getOrCreateEntityCollection(comps).ents
   }
 

@@ -1,0 +1,26 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  background: #e0e0e0;
+}
+canvas {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -300px 0 0 -400px;
+  background: white;
+  box-shadow: 0px 0px 45px #888;
+}
+
+h1 {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  text-align: center;
+  margin: -380px auto 0 auto;
+  font: 4em sans-serif;
+}
