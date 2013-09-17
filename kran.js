@@ -59,13 +59,31 @@
     this.buffer = new Array(comps.length + 2)
     this.ents = new LinkedList()
     this.arrival = []
+
+    // Mark components that are part of this collection
     comps.forEach(function (compId) {
       checkComponentExistence(compId)
       collectionsRequieringComp[compId].push(this)
     }, this)
   }
 
-  var getOrCreateEntityCollection = function(comps) {
+  EntityCollection.prototype.callWithComps = function(ent, func, context, ev) {
+    if (ev) this.buffer[0] = ev
+    for (var i = 0; i < this.comps.length; i++) {
+      this.buffer[i + (ev ? 1 : 0)] = ent.comps[this.comps[i]]
+    }
+    this.buffer[i] = ent
+    func.apply(context, this.buffer)
+  }
+
+  EntityCollection.prototype.forEachWithComps = function(every, context, ev) {
+    this.ents.forEach(function (ent) { // Call every
+      this.callWithComps(ent, every, context, ev)
+    }, this)
+  }
+
+  var getEntityCollection = function(comps) {
+    comps = wrapInArray(comps)
     var key = comps.slice(0).sort().toString()
     if (entityCollections[key]) {
       return entityCollections[key]
@@ -76,8 +94,7 @@
   }
 
   Kran.getEntities = function (comps) {
-    comps = wrapInArray(comps)
-    return getOrCreateEntityCollection(comps).ents
+    return getEntityCollection(comps).ents
   }
 
   // ***********************************************
@@ -97,8 +114,8 @@
     props.run = runSystem
 
     if (props.components !== undefined) {
-      props.components = wrapInArray(props.components)
-      props.coll = getOrCreateEntityCollection(props.components)
+      props.components = props.components
+      props.coll = getEntityCollection(props.components)
       if (isFunc(props.arrival)) props.coll.arrival.push(props.arrival)
     }
     if (props.on) {
@@ -132,20 +149,9 @@
     }
     if (isFunc(this.pre)) this.pre(ev)
     if (isFunc(this.every)) {
-      this.coll.ents.forEach(function (ent) { // Call every
-        callFuncWithCompsFromEnt.call(this, this.coll, ent, this.every, ev)
-      }, this)
+      this.coll.forEachWithComps(this.every, this, ev)
     }
     if (isFunc(this.post)) this.post(ev)
-  }
-
-  var callFuncWithCompsFromEnt = function(coll, ent, func, ev) {
-    if (ev) coll.buffer[0] = ev
-    for (var i = 0; i < coll.comps.length; i++) {
-      coll.buffer[i + (ev ? 1 : 0)] = ent.comps[coll.comps[i]]
-    }
-    coll.buffer[i] = ent
-    func.apply(this, coll.buffer)
   }
 
   // ***********************************************
@@ -228,7 +234,7 @@
 
   var addEntityToCollection = function(ent, coll) {
     coll.arrival.forEach(function (func) {
-      callFuncWithCompsFromEnt(coll, ent, func)
+      coll.callWithComps(ent, func)
     })
     var collEntry = coll.ents.add(ent)
     ent.belongsTo.add(new CollectionBelonging(coll.comps, collEntry))
