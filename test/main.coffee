@@ -37,18 +37,6 @@ describe 'Kran:', ->
       entity().add(comp)
       system.all()
 
-    it 'creates components from and attached to an object', ->
-      spy = sinon.spy((foo, bar) ->
-        foo.should.be.true
-        bar.horse.should.equal(4)
-      )
-      c = component({
-        foo: undefined
-        bar: "horse"
-      })
-      system({ components: [c.foo, c.bar], arrical: spy })
-      entity().add(c.foo).add(c.bar, 4)
-
   describe 'system', ->
     it 'makes it possible to add new systems', ->
       system({})
