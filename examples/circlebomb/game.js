@@ -1,7 +1,7 @@
 (function () {
-  var c = Kran.component
-  var s = Kran.system
-  var e = Kran.entity
+  var component = Kran.component
+  var system = Kran.system
+  var entity = Kran.entity
 
   // Globals
   var render = document.getElementById('render').getContext('2d')
@@ -11,41 +11,41 @@
 
   // Components
 
-  var growing = c("speed")
-  var goingToExplode = c("in")
-  var damage = c("giving")
-  var weight = c("val")
-  var collided = c("with")
-  var health = c("left")
-  var player = c()
-  var monster = c()
-  var explosion = c()
-  var background = c()
-  var exploded = c()
-  var follow = c(function (pos, s) {
+  var growing = component("speed")
+  var goingToExplode = component("in")
+  var damage = component("giving")
+  var weight = component("val")
+  var collided = component("with")
+  var health = component("left")
+  var player = component()
+  var monster = component()
+  var explosion = component()
+  var background = component()
+  var exploded = component()
+  var follow = component(function (pos, s) {
     this.pos = pos;
     this.speed = s
   })
-  var pulsing = c(function(size, speed) {
+  var pulsing = component(function(size, speed) {
     this.maxSize = size;
     this.curSize = 0
     this.speed = speed
   })
-  var disappering = c(function (t) {
+  var disappering = component(function (t) {
     this.time = t
     this.curTime = t
   })
-  var circle = c(function (x, y, r) {
+  var circle = component(function (x, y, r) {
     this.x = x || 0
     this.y = y || 0
     this.radius = r || 20
   })
-  var color = c(function (r, g, b, a) {
+  var color = component(function (r, g, b, a) {
     this.r = r || 0; this.g = g || 0; this.b = b || 0; this.a = a || 1;
   })
 
   // Systems
-  s({ // Render
+  system({ // Render
     components: [circle, color],
     background: [], // Store entities that should be rendered in the background
     pre: function() {
@@ -72,21 +72,21 @@
       render.fill()
     },
   })
-  s({ // Resize
+  system({ // Resize
     on: ['load', 'resize'],
     pre: function(ev) {
       render.canvas.width = document.body.clientWidth
       render.canvas.height = document.body.clientHeight
     }
   })
-  s({ // Update mouse coordinates
+  system({ // Update mouse coordinates
     on: 'mousemove',
     pre: function(ev) {
       mouse.x = ev.clientX
       mouse.y = ev.clientY
     }
   })
-  s({ // Follow mouse
+  system({ // Follow mouse
     components: [circle, follow],
     every: function(circle, follow) {
       var dx = follow.pos.x - circle.x
@@ -97,7 +97,7 @@
       circle.y += Math.sin(dir) * moveDist
     }
   })
-  s({ // Fade out disappering entities
+  system({ // Fade out disappering entities
     components: [disappering, color],
     every: function(dis, color, ent) {
       dis.curTime--
@@ -105,19 +105,19 @@
       if (dis.curTime <= 0) { ent.delete(); }
     }
   })
-  s({ // Create explosion
+  system({ // Create explosion
     components: [exploded, circle],
     arrival: function(exploded, circle) {
       var x = circle.x, y = circle.y
-      e().add(circle, x, y, 10).add(color, 255, 80, 0).add(damage, 10).add(explosion)
-         .add(disappering, 20).add(growing, 8).add(weight, Infinity)
-      e().add(circle, x, y, 7).add(color, 255, 255, 0)
-         .add(disappering, 20).add(growing, 6)
-      e().add(circle, x, y, 1).add(color, 255, 255, 255)
-         .add(disappering, 20).add(growing, 2)
+      entity().add(circle, x, y, 10).add(color, 255, 80, 0).add(damage, 10).add(explosion)
+              .add(disappering, 20).add(growing, 8).add(weight, Infinity)
+      entity().add(circle, x, y, 7).add(color, 255, 255, 0)
+              .add(disappering, 20).add(growing, 6)
+      entity().add(circle, x, y, 1).add(color, 255, 255, 255)
+              .add(disappering, 20).add(growing, 2)
     }
   })
-  s({ // Countdown to and trigger explosion
+  system({ // Countdown to and trigger explosion
     components: [circle, goingToExplode],
     every: function(circle, gointToExplode, ent) {
       gointToExplode.in -= 1
@@ -127,21 +127,21 @@
       }
     }
   })
-  s({ // Grow circle
+  system({ // Grow circle
     components: [circle, growing],
     every: function(circle, growing, ent) {
       circle.radius += growing.speed
     }
   })
-  s({ // Place bomb
+  system({ // Place bomb
     on: "mousedown",
     pre: function(ev) {
-      e().add(circle, ev.clientX, ev.clientY, 10).add(color, 100, 0, 0)
-         .add(goingToExplode, 100).add(pulsing, 3, 0.15)
-         .add(weight, 100)
+      entity().add(circle, ev.clientX, ev.clientY, 10).add(color, 100, 0, 0)
+              .add(goingToExplode, 100).add(pulsing, 3, 0.15)
+              .add(weight, 100)
     }
   })
-  s({ // Change size of pulsing circles
+  system({ // Change size of pulsing circles
     components: [circle, pulsing],
     every: function(circle, pulsing) {
       circle.radius += pulsing.speed
@@ -152,7 +152,7 @@
       }
     }
   })
-  s({ // Detect collisions
+  system({ // Detect collisions
     components: [circle, weight],
     pre: function() {
       Kran.getEntityCollection([circle, weight]).ents.forEach(function (ent1, elm) {
@@ -164,7 +164,7 @@
       }, this)
     }
   })
-  s({ // Makes one bombs explosion trigger another bomb
+  system({ // Makes one bombs explosion trigger another bomb
     components: [collided, goingToExplode],
     arrival: function(collided, goingToExplode) {
       if (collided.with.has(explosion)) {
@@ -172,7 +172,7 @@
       }
     }
   })
-  s({ // Makes explosions deal damage
+  system({ // Makes explosions deal damage
     components: [collided, circle, health],
     arrival: function(collided, circle, health, ent) {
       if (collided.with.has(explosion)) {
@@ -180,7 +180,7 @@
       }
     }
   })
-  s({ // Makes the player take damage from monsters
+  system({ // Makes the player take damage from monsters
     components: [collided, circle, health, player],
     arrival: function(collided, circle, health, player, ent) {
       if (collided.with.has(monster)) {
@@ -188,7 +188,7 @@
       }
     }
   })
-  s({
+  system({
     pre: function() {
       if (--timeToMonster <= 0) {
         createMonster();
@@ -199,11 +199,11 @@
   })
 
   // Global entities
-  var playerEnt = e().add(circle, 600, 152, 20).add(color).add(player)
-                     .add(weight, 10).add(follow, mouse, 8).add(health, 500)
+  var playerEnt = entity().add(circle, 600, 152, 20).add(color).add(player)
+                          .add(weight, 10).add(follow, mouse, 8).add(health, 500)
 
   var gameLoop = function() {
-    s.all()
+    system.all()
     requestAnimationFrame(gameLoop)
   }
   gameLoop()
@@ -218,8 +218,8 @@
     var red = Math.floor(50 + 150 * Math.random())
     var green = Math.floor(50 + 150 * Math.random())
     var blue = Math.floor(50 + 150 * Math.random())
-    e().add(circle, x, y, radius).add(color, red, green, blue).add(weight, 50)
-       .add(follow, playerEnt.get(circle), speed).add(health, 110).add(damage, 8).add(monster)
+    entity().add(circle, x, y, radius).add(color, red, green, blue).add(weight, 50)
+            .add(follow, playerEnt.get(circle), speed).add(health, 110).add(damage, 8).add(monster)
   }
 
   function dealDamage(health, circle, damage, ent) {
@@ -240,11 +240,11 @@
   function createBloodSplatter(circ) {
     var x = circ.x - circ.radius / 2 + circ.radius * Math.random()
     var y = circ.y - circ.radius / 2 + circ.radius * Math.random()
-    e().add(circle, x, y, circ.radius * Math.random())
-       .add(color, 155, 0, 0)
-       .add(growing, -0.04)
-       .add(disappering, 400)
-       .add(background)
+    entity().add(circle, x, y, circ.radius * Math.random())
+            .add(color, 155, 0, 0)
+            .add(growing, -0.04)
+            .add(disappering, 400)
+            .add(background)
   }
 
   function colorString(r, g, b, a) {
