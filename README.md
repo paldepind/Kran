@@ -132,9 +132,11 @@ var gameLoop = function() {
   requestAnimationFrame(gameLoop)
 }  
 ```
-The above simply runs all systems in order of creation. If more controll is needed
+The above simply runs all systems in order of creation. If more control is needed
 they can be put into groups and runned like this:
 ```javascript
+system.groupName()
+```
 
 API documentation
 =============
