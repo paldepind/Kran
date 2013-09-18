@@ -82,19 +82,13 @@
     }, this)
   }
 
-  var getEntityCollection = function(comps) {
+  var getEntityCollection = Kran.getEntityCollection = function(comps) {
     comps = wrapInArray(comps)
     var key = comps.slice(0).sort().toString()
-    if (entityCollections[key]) {
-      return entityCollections[key]
-    } else {
+    if (entityCollections[key] === undefined) {
       entityCollections[key] = new EntityCollection(comps)
-      return entityCollections[key] 
     }
-  }
-
-  Kran.getEntities = function (comps) {
-    return getEntityCollection(comps).ents
+    return entityCollections[key] 
   }
 
   // ***********************************************

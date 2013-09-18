@@ -155,7 +155,7 @@
   s({ // Detect collisions
     components: [circle, weight],
     pre: function() {
-      Kran.getEntities([circle, weight]).forEach(function (ent1, elm) {
+      Kran.getEntityCollection([circle, weight]).ents.forEach(function (ent1, elm) {
         var ent2
         while((elm = elm.next) && (ent2 = elm.data)) {
           if (!ent1.has(weight)) break;
