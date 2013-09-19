@@ -13,13 +13,12 @@ _Note_: Kran is under heavy development, everything is work in progess.
 
 Demo game
 =========
-[Try the crazy demo game with explosion and blood!]
+[Try the crazy demo game with explosions and blood!]
 (http://paldepind.github.io/Kran/examples/circlebomb/)
 
-_Note_: It only works in modern browsers - currently only tested in Firefox and
-Chrome. The tearing in the image below is for some reason introduced when
-taking a screenshot.
-![Screenshot](http://i.imgur.com/6N0gzYX.png "Screenshot of demo game")
+_Note_: It only works in modern desktop browsers - currently only tested in Firefox and
+Chrome.
+![Screenshot](http://i.imgur.com/H9Qijoc.png)
 
 Why Kran?
 =========
