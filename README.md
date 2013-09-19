@@ -79,7 +79,7 @@ This is the same as doing
 ```javascript
 var weight = component(function (weight) {
   this.val = weight
-}
+})
 ```
 
 We've now created two components. A velocity component and a weight component.
@@ -97,7 +97,7 @@ system({ // Creates a new system that accelerates objects with weight towards th
   every: function(velocity, weight) {
     velocity.y += weight.val * GRAVITY
   }
-}
+})
 ```
 
 That's all we have to do in order to make entities get attracted towards the
