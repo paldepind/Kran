@@ -53,12 +53,12 @@
       render.clearRect(0, 0, render.canvas.width, render.canvas.height)
       while (this.background.length > 0) {
         ent = this.background.pop()
-        if (ent.get(circle) && ent.get(color))
+        if (ent.has(circle) && ent.has(color))
           this.renderCircle(ent.get(circle), ent.get(color))
       }
     },
     every: function(circle, color, ent) {
-      if (ent.get(background)) {
+      if (ent.has(background)) {
         this.background.push(ent)
       } else {
         this.renderCircle(circle, color)

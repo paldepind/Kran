@@ -161,14 +161,14 @@
     if (this.comps[compId] !== undefined) throw new Error("The entity already has the component")
     if (isFunc(components[compId])) {
       this.comps[compId] = new components[compId](arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+      this.comps[compId].id = compId
     } else if (typeof components[compId] === "string") {
-      var obj = {}
+      var obj = { id: compId }
       obj[components[compId]] = arg1
       this.comps[compId] = obj
     } else {
-      this.comps[compId] = {}
+      this.comps[compId] = compId
     }
-    this.comps[compId].id = compId
     collectionsRequieringComp[compId].forEach(function (coll) {
       if (qualifiesForCollection(this, coll.comps)) {
         addEntityToCollection(this, coll)
@@ -180,6 +180,11 @@
   Entity.prototype.get = function(compId) {
     compId = processCompId(compId)
     return this.comps[compId]
+  }
+
+  Entity.prototype.has = function(compId) {
+    compId = processCompId(compId)
+    return this.comps[compId] !== undefined
   }
 
   Entity.prototype.get = function(compId) {
