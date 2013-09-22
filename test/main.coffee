@@ -143,6 +143,15 @@ describe 'Kran:', ->
       system.all()
       spy1.should.have.been.calledBefore(spy2)
 
+    it 'only calls systems if they contain components', ->
+      spy = sinon.spy()
+      comp = component()
+      system({ components: comp, pre: spy })
+      system.all()
+      entity().add(comp)
+      system.all()
+      spy.should.have.been.calledOnce
+
   describe 'entity', ->
     it 'allows for creation of new entities', ->
       entity().should.be.an('object')

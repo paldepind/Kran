@@ -138,6 +138,10 @@
   initGroup('all')
 
   var runSystem = function(ev) {
+    if (this.coll !== undefined &&
+        this.coll.ents.length == 0) {
+      return
+    }
     if (ev && ev instanceof CustomEvent) {
       ev = ev.detail
     }
@@ -291,11 +295,12 @@
   var LinkedList = Kran.LinkedList = function () {
     this.head = null
     this.tail = null
+    this.length = 0
   }
 
   function Element(data, list) {
     this.data = data
-    this.list = list 
+    this.list = list
     this.prev = list.tail
     this.next = null
   }
@@ -311,6 +316,7 @@
     } else {
       this.list.tail = this.prev
     }
+    this.list.length--
   }
 
   LinkedList.prototype.add = function(data) {
@@ -321,6 +327,7 @@
       this.head = elm
     }
     this.tail = elm
+    this.length++
     return elm
   }
 
