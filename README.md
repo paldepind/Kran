@@ -138,7 +138,87 @@ for an example on how a game made with Kran can look like.
 
 API documentation
 =============
-Nothing here yet.
+_Note:_ The API documentation is still very rough and should be considered a
+draft.
+
+### Creating components
+Components are created using the `Kran.component` function. The function
+supports three different ways of creating components. Either by passing it a
+constructor function, a string or undefined.
+
+The basic way of creating components is by passing `component` a constructor
+function.
+```javascript
+Kran.component(constr)
+```
+
+Here `constr` is a constructor function that initializes the component. It can
+take arguments and they will be passed along to the constructor function when
+an instance of the component is added to an entity.
+_Example:_
+```javascript
+var pos = Kran.component(function (x, y) {
+  this.x = x
+  this.y = y
+})
+```
+
+If creating a component with only one property `component` provides a shorthand
+syntax. It can be passed simply the name of the single component as a string.
+```javascript
+Kran.component(propertyName)
+```
+Here `propertyName` is a string and the above is identical to.
+```javascript
+Kran.component(function (property) {
+  this.propertyName = property
+})
+```
+
+If one needs a component where only its precence if of concern (i.e. it doesn't
+include any changing data) `component` can be called with no arguments
+```javascript
+Kran.component()
+```
+This creates a component that takes no initialization arguments and contains no
+properties. Kran will store it as a boolean internally.
+
+### Registrering systems
+
+Sysems are registered by calling `Kran.system` with an object describing the
+system.
+```javascript
+Kran.system(systemObj)
+```
+
+### Running systems
+When systems groups are created a function with the same name as the group will
+be attached to `kran.system`. It allows running all the systems in the group
+in order of creation.
+```javascript
+kran.system.groupName()
+```
+
+Alternatively a all systems except those listening to events gets added to a
+special group named `all`. Thus all functions can be run with
+```javascript
+kran.system.all()
+```
+
+### Creating entities
+A new entity is created by calling `Kran.entity`. The function takes no
+arguments. It returns an entity object.
+
+### Composing entities
+*Example:*
+```javascript
+entity().add(pos, x, y).add(color, r, g, b, a).add(firing, interval, damage)
+```
+
+### Working with entity collections
+```javascript
+Kran.getEntityCollection([comp1, comp2, comp3])
+```
 
 To do
 =====
