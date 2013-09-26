@@ -20,7 +20,7 @@
   var component = Kran.component = function(comp) {
     if (typeof(comp) === "object") {
       var obj = {}
-      for (prop in comp) {
+      for (var prop in comp) {
         obj[prop] = createComponent(comp[prop])
       }
       return obj
@@ -72,7 +72,7 @@
     for (var i = 0; i < this.comps.length; i++) {
       this.buffer[i + (ev ? 1 : 0)] = ent.comps[this.comps[i]]
     }
-    this.buffer[i] = ent
+    this.buffer[i + (ev ? 1 : 0)] = ent
     func.apply(context, this.buffer)
   }
 
@@ -95,7 +95,6 @@
   // System
   //
   var systems = []
-  var system = {}
 
   var runGroup = function() {
     for (var i = 0; i < this.length; i++) {
@@ -139,7 +138,7 @@
 
   var runSystem = function(ev) {
     if (this.coll !== undefined &&
-        this.coll.ents.length == 0) {
+        this.coll.ents.length === 0) {
       return
     }
     if (ev && ev instanceof CustomEvent) {
@@ -334,7 +333,7 @@
   LinkedList.prototype.forEach = function(func, context) {
     var elm, nextElm = this.head
     
-    while (nextElm != null) {
+    while (nextElm !== null) {
       elm = nextElm
       nextElm = elm.next
       func.call(context, elm.data, elm)
