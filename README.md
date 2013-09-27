@@ -191,6 +191,20 @@ system.
 Kran.system(systemObj)
 ```
 
+The `systemObj` can contain the following properties
+
+* `component`: A component id or an array of component ids that the function
+depends on.
+* `pre`: A function called once before the `every` function when the system is
+run.
+* `every`: A function being called once for every entity that has the
+component required by the component. As arguments the function is given the
+entities components followed by the entity itself.
+* `post`: Like `every` except it is called after `every`.
+* `arrival`: Called whenever an entity not satisfying the system gets a
+  component added making it satisfy the system. The components and the entity
+  is passed as arguments.
+
 ### Running systems
 When systems groups are created a function with the same name as the group will
 be attached to `kran.system`. It allows running all the systems in the group
@@ -218,6 +232,12 @@ entity().add(pos, x, y).add(color, r, g, b, a).add(firing, interval, damage)
 ### Working with entity collections
 ```javascript
 Kran.getEntityCollection([comp1, comp2, comp3])
+```
+
+### Liked list
+
+```javascript
+new kran.LinkedList()
 ```
 
 To do
