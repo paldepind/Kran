@@ -1,9 +1,19 @@
 {
-  "name": "Kran",
+  "name": "kran",
+  "title": "Kran",
+  "description": "A flexible, convenient, simple and efficient architecture suitable for game development.",
   "version": "0.0.1",
-  "private": true,
-  "dependencies": {
+  "homepage": "https://github.com/paldepind/Kran",
+  "keywords": ["entity system", "game development", "library"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/paldepind/Kran.git"
   },
+  "files": ["kran.js"],
+  "main": "./kran.js",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {},
   "devDependencies": {
     "coffee-script": "*",
     "mocha": "*",
