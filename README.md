@@ -26,13 +26,13 @@ Why Kran?
 It's _flexible_:
 Kran gains most of its flexibility from the entity system architechture which it is
 an implementation of. Unlike the case with object oriented programming data
-isn't tied together with the functions that processes it in. And you don't have
+isn't tied together with the functions that processes it. And you don't have
 to fit things inside an inflexible class hierarchy to share code. In Kran
 entities are created by composition rather than inheritance. They can be
 composed out of any combination of data components desireable and they'll
 automatically find their way to the functions that wants to operate on them.
 This allows for maximum flexibility and reuseability - nothing is tightly
-coupled, everything can be mixed and matched.
+coupled, everything can be mixed to ones hearts desire.
 
 It's _effortless_:
 Kran has a simple convinient API that makes common tasks very easy. It provides
