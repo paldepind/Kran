@@ -152,9 +152,13 @@ function.
 Kran.component(constr)
 ```
 
-Here `constr` is a constructor function that initializes the component. It can
-take arguments and they will be passed along to the constructor function when
-an instance of the component is added to an entity.
+Here `constr` is a constructor function that initializes the component. Since
+the constructor function is a normal JavaScript constructor function it is
+perfectly possible to add methods to component. That however is not proper
+usage of a entity system and should probably never be done. The constructor
+function gets passed the argument given when an instance of the component is
+added to an entity.
+
 _Example:_
 ```javascript
 var pos = Kran.component(function (x, y) {
@@ -163,8 +167,9 @@ var pos = Kran.component(function (x, y) {
 })
 ```
 
-If creating a component with only one property `component` provides a shorthand
-syntax. It can be passed simply the name of the single component as a string.
+For creating a component with only one property `component` provides a
+convenient shorthand syntax. Simply call it with the name of the single
+component as a string.
 ```javascript
 Kran.component(propertyName)
 ```
@@ -176,7 +181,7 @@ Kran.component(function (property) {
 ```
 
 If one needs a component where only its precence if of concern (i.e. it doesn't
-include any changing data) `component` can be called with no arguments
+contain any changing data) `component` can be called with no arguments
 ```javascript
 Kran.component()
 ```
@@ -191,7 +196,7 @@ system.
 Kran.system(systemObj)
 ```
 
-The `systemObj` can contain the following properties
+`systemObj` is an object and can contain the following properties
 
 * `component`: A component id or an array of component ids that the function
 depends on.
@@ -238,6 +243,10 @@ Kran.getEntityCollection([comp1, comp2, comp3])
 
 ```javascript
 new kran.LinkedList()
+```
+
+```javascript
+linkedListInstance.add(data)
 ```
 
 To do
