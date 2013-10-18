@@ -85,7 +85,7 @@ var weight = component(function (weight) {
 We've now created two components. A velocity component and a weight component.
 We want to make all entities that has both speed and a weight to accelerated
 towards the ground. In other words we want to implement gravity. For that we need
-a _system_. Systems is were the logis that would be methods in OOP is put in an
+a _system_. Systems is were the logic that would be methods in OOP is put in an
 entity system.
 
 ```javascript
