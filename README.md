@@ -1,15 +1,15 @@
 Kran
 ====
 
-A flexible, convenient, simple and efficient architecture primarely for game
+A flexible, convenient, simple and efficient architecture primarily for game
 development. It will get your game development up to speed quickly and allow
-your game to exand smoothly.
+your game to expand smoothly.
 
 Kran provides nothing but an _architecture_ that can be used for any type of
 game. All other decisions - like how to do rendering or physics - is up to the
 user. Kran can without problems be used in conjunction with other libraries.
 
-_Note_: Kran is under heavy development, everything is work in progess.
+_Note_: Kran is under heavy development, everything is work in progress.
 
 Demo game
 =========
@@ -24,18 +24,18 @@ Why Kran?
 =========
 
 It's _flexible_:
-Kran gains most of its flexibility from the entity system architechture which it is
+Kran gains most of its flexibility from the entity system architecture which it is
 an implementation of. Unlike the case with object oriented programming data
 isn't tied together with the functions that processes it. And you don't have
 to fit things inside an inflexible class hierarchy to share code. In Kran
 entities are created by composition rather than inheritance. They can be
-composed out of any combination of data components desireable and they'll
+composed out of any combination of data components desirable and they'll
 automatically find their way to the functions that wants to operate on them.
 This allows for maximum flexibility and reuseability - nothing is tightly
 coupled, everything can be mixed to ones hearts desire.
 
 It's _effortless_:
-Kran has a simple convinient API that makes common tasks very easy. It provides
+Kran has a simple convenient API that makes common tasks very easy. It provides
 structure to your code so that you can worry about actually getting your game
 rolling without being hindered later on by inflexibility or a cumbersome design
 that makes further expansions hard. It has an event system that integrates with
@@ -49,8 +49,8 @@ that's all. It has a tight focus. This means you can learn it quickly and
 easily get a complete understanding of how it works. It won't impact your page
 loading time in any noticeable way either.
 
-It's _efficient_: Kran is designed from the buttom up with an efficient use of
-datastructures and an API that doesn't introduce garbage during game runtime.
+It's _efficient_: Kran is designed from the bottom up with an efficient use of
+data structures and an API that doesn't introduce garbage during game runtime.
 Note however that Kran is in an early stage of development and the optimization
 isn't done.
 
@@ -92,7 +92,7 @@ entity system.
 system({ // Creates a new system that accelerates objects with weight towards the ground
   // The system is interested in entities with velocity and weight components
   components: [velocity, weight],
-  // When the system runs this functin will be called for each entity that has the
+  // When the system runs this function will be called for each entity that has the
   // requested components, the components will be given as arguments to the function
   every: function(velocity, weight) {
     velocity.y += weight.val * GRAVITY
@@ -118,7 +118,7 @@ Kran.entity().add(velocity, 100, 0).add(weight, 10)
 Kran.entity().add(velocity, 0, -10000).add(weight, 84782)
 ```
 
-Now we set up the gameloop. This is what a simple gameloop might look like in
+Now we set up the game loop. This is what a simple game loop might look like in
 Kran (actually this is exactly what the demo game's loop look like):
 ```javascript
 var gameLoop = function() {      
@@ -127,7 +127,7 @@ var gameLoop = function() {
 }  
 ```
 The above simply runs all systems in order of creation. If more control is needed
-systems can be put into groups and runned like this:
+systems can be put into groups and ran like this:
 ```javascript
 system.groupName()
 ```
@@ -180,7 +180,7 @@ Kran.component(function (property) {
 })
 ```
 
-If one needs a component where only its precence if of concern (i.e. it doesn't
+If one needs a component where only its presence if of concern (i.e. it doesn't
 contain any changing data) `component` can be called with no arguments
 ```javascript
 Kran.component()
@@ -188,7 +188,7 @@ Kran.component()
 This creates a component that takes no initialization arguments and contains no
 properties. Kran will store it as a boolean internally.
 
-### Registrering systems
+### Registering systems
 
 Sysems are registered by calling `Kran.system` with an object describing the
 system.
