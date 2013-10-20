@@ -1,7 +1,8 @@
 (function () {
-  var component = Kran.component
-  var system = Kran.system
-  var entity = Kran.entity
+  var kran = new Kran()
+  var component = kran.component.bind(kran)
+  var system = kran.system.bind(kran)
+  var entity = kran.entity.bind(kran)
 
   // Globals
   var render = document.getElementById('render').getContext('2d')
@@ -73,7 +74,7 @@
     },
   })
   system({ // Resize
-    on: ['load', 'resize'],
+    on: ["load", "resize"],
     pre: function(ev) {
       render.canvas.width = document.body.clientWidth
       render.canvas.height = document.body.clientHeight
@@ -155,7 +156,7 @@
   system({ // Detect collisions
     components: [circle, weight],
     pre: function() {
-      Kran.getEntityCollection([circle, weight]).ents.forEach(function (ent1, elm) {
+      kran.getEntityCollection([circle, weight]).ents.forEach(function (ent1, elm) {
         var ent2
         while((elm = elm.next) && (ent2 = elm.data)) {
           if (!ent1.has(weight)) break;
@@ -203,7 +204,7 @@
                           .add(weight, 10).add(follow, mouse, 8).add(health, 500)
 
   var gameLoop = function() {
-    system.all()
+    kran.run("all")
     requestAnimationFrame(gameLoop)
   }
   gameLoop()
