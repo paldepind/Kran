@@ -1,12 +1,16 @@
 Kran = require( '../kran')
-component = Kran.component
-system = Kran.system
-entity = Kran.entity
+kran = new Kran()
+component = kran.component.bind(kran)
+system = kran.system.bind(kran)
+entity = kran.entity.bind(kran)
 
 describe 'Kran:', ->
 
   afterEach ->
-    Kran.reset()
+    kran = new Kran()
+    component = kran.component.bind(kran)
+    system = kran.system.bind(kran)
+    entity = kran.entity.bind(kran)
 
   describe 'component', ->
 
@@ -35,7 +39,7 @@ describe 'Kran:', ->
     it 'handles a single non-array component', ->
       sys = system({ components: comp })
       entity().add(comp)
-      system.all()
+      kran.run('all')
 
   describe 'system', ->
     it 'makes it possible to add new systems', ->
@@ -44,14 +48,14 @@ describe 'Kran:', ->
     it 'can run systems', () ->
       spy = sinon.spy()
       sys = system({ pre: spy, group: "sys" })
-      system.sys()
+      kran.run('sys')
       spy.should.have.been.called
 
     it 'can run all systems at once', ->
       spy = sinon.spy()
       system { pre: spy }
       system { post: spy }
-      system.all()
+      kran.run('all')
       spy.should.have.been.calledTwice
 
     it 'seperates systems into groups', ->
@@ -61,8 +65,8 @@ describe 'Kran:', ->
       system { pre: spy2, group: 'thsBgrp' }
       system { pre: spy2, group: 'thsBgrp' }
 
-      system.all()
-      system.thsBgrp()
+      kran.run('all')
+      kran.run('thsBgrp')
 
       spy.should.have.been.calledOnce
       spy2.callCount.should.equal 4
@@ -73,7 +77,7 @@ describe 'Kran:', ->
       system { every: spy, components: comp }
       entity().add(comp)
       entity().add(comp)
-      system.all()
+      kran.run('all')
       spy.should.have.been.calledTwice
 
     it 'doesnt call the every function if nonexistent', ->
@@ -81,7 +85,7 @@ describe 'Kran:', ->
       comp = component(() -> @v = 1)
       system { components: comp }
       entity().add(comp)
-      system.all()
+      kran.run('all')
 
     it 'calls the every function with components as arguments', ->
       func = (comp2, comp) ->
@@ -91,7 +95,7 @@ describe 'Kran:', ->
       comp2 = component(() -> @v = 2)
       system { every: func, components: [comp2, comp] }
       entity().add(comp).add(comp2)
-      system.all()
+      kran.run('all')
 
     it 'calls pre and post with nothing', ->
       spy = sinon.spy (comp, comp2) ->
@@ -101,7 +105,7 @@ describe 'Kran:', ->
       comp2 = component(() -> @foo = 'bar')
       system { pre: spy, post: spy, components: [comp, comp2] }
       entity().add(comp).add(comp2)
-      system.all()
+      kran.run('all')
       spy.should.have.been.calledTwice
 
     it 'calls every with entity as last argument', ->
@@ -110,7 +114,7 @@ describe 'Kran:', ->
       comp = component(() -> @v = 1)
       system({ every: spy, components: comp })
       ent = entity().add(comp)
-      system.all()
+      kran.run('all')
 
     it 'assigns proper ids in entities list', ->
       spy = sinon.spy()
@@ -119,7 +123,7 @@ describe 'Kran:', ->
       system({ components: comp2 })
       sys = system({ components: comp, every: spy })
       ent = entity().add(comp) # system properly stores the entities id=0
-      system.all()
+      kran.run('all')
 
     it 'shares entity collections between systems if possible', ->
       comp = component()
@@ -131,7 +135,7 @@ describe 'Kran:', ->
       comp = component()
       system({ components: comp, foo: "bar", every: () -> @foo.should.equal("bar") })
       entity().add(comp)
-      system.all()
+      kran.run('all')
 
     it 'calls systems in order of creation', ->
       spy1 = sinon.spy()
@@ -140,16 +144,16 @@ describe 'Kran:', ->
       system({ components: comp, pre: spy1 })
       system({ components: comp, pre: spy2 })
       entity().add(comp)
-      system.all()
+      kran.run('all')
       spy1.should.have.been.calledBefore(spy2)
 
     it 'only calls systems if they contain components', ->
       spy = sinon.spy()
       comp = component()
       system({ components: comp, pre: spy })
-      system.all()
+      kran.run('all')
       entity().add(comp)
-      system.all()
+      kran.run('all')
       spy.should.have.been.calledOnce
 
   describe 'entity', ->
@@ -170,6 +174,7 @@ describe 'Kran:', ->
       comp = component("val")
       ent = entity().add(comp, 2)
       ent2 = entity().add(comp, 3)
+      console.log(ent.get(comp))
       ent.get(comp).val.should.equal(2)
       ent2.get(comp).val.should.equal(3)
 
@@ -202,13 +207,13 @@ describe 'Kran:', ->
       sys = system({ components: [comp, comp3], every: spy })
 
       ent = entity().add(comp).add(comp2).add(comp3)
-      system.all()
+      kran.run('all')
       should.exist(ent.belongsTo.head)
       ent.remove(comp2)
       should.exist(ent.belongsTo.head)
       ent.remove(comp)
       should.not.exist(ent.belongsTo.head)
-      system.all()
+      kran.run('all')
       spy.should.have.been.calledOnce
 
     it 'allows removal of components using component instances', ->
@@ -218,8 +223,8 @@ describe 'Kran:', ->
       comp = component(() -> @v = 1)
       sys = system({ components: comp, every: spy })
       ent = entity().add(comp)
-      system.all()
-      system.all()
+      kran.run('all')
+      kran.run('all')
       spy.should.have.been.calledOnce
 
     it 'makes it possible to delete entities', ->
@@ -228,9 +233,9 @@ describe 'Kran:', ->
       sys = system({ components: comp, every: spy })
 
       ent = entity().add(comp)
-      system.all()
+      kran.run('all')
       ent.delete()
-      system.all()
+      kran.run('all')
       spy.should.have.been.calledOnce
 
     it 'call systems arrival when entity gets added to collection', ->
@@ -250,5 +255,5 @@ describe 'Kran:', ->
       comp2 = component()
       system({ components: [comp, comp2], arrival: spy, every: spy })
       entity().add(comp).trigger(comp2, 1)
-      system.all()
+      kran.run('all')
       spy.should.have.been.calledOnce

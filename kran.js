@@ -1,48 +1,36 @@
 (function () {
 
-  var Kran = {}
+  var Kran = function() {
+    this.components = []
 
-  var reset = Kran.reset = function() {
-    components.length = 0
-    collectionsRequieringComp.length = 0
-    entity.length = 0
-    entityCollections = []
-    systems.length = 0
-    systems.all.length = 0
+    this.systems = []
+    this.systemGroups = {}
+    this.systemGroups.all = new SystemGroup()
+
+    this.entityCollections = {}
   }
 
   // ***********************************************
   // Component
   //
-  var components = []
-  var collectionsRequieringComp = []
-
-  var component = Kran.component = function(comp) {
-    if (typeof(comp) === "object") {
-      var obj = {}
-      for (var prop in comp) {
-        obj[prop] = createComponent(comp[prop])
-      }
-      return obj
-    } else {
-      return createComponent(comp)
-    }
-  }
-
-  var createComponent = function(comp) {
+  function Component(comp) {
     if (isFunc(comp) || typeof(comp) === "string") {
-      components.push(comp)
+      this.value = comp
     } else if (comp === true || comp === undefined) {
-      components.push(true)
+      this.value = true
     } else {
-      throw new TypeError("Argument " + comp + " is given but not a function")
+      throw new TypeError("Argument " + comp + " is given but not a function or string")
     }
-    collectionsRequieringComp.push([])
-    return components.length - 1
+    this.collectionsRequieringComp = []
   }
 
-  var checkComponentExistence = function (compId) {
-    if (components[compId] !== undefined) {
+  Kran.prototype.component = function(comp) {
+    this.components.push(new Component(comp))
+    return this.components.length - 1
+  }
+
+  function checkComponentExistence(comps, compId) {
+    if (comps[compId] !== undefined) {
       return compId
     } else {
       throw new Error("Component " + compId + " does no exist")
@@ -52,19 +40,11 @@
   // ***********************************************
   // Entity collections
   //
-  var entityCollections = {}
-
   var EntityCollection = function(comps) {
     this.comps = comps
     this.buffer = new Array(comps.length + 2)
     this.ents = new LinkedList()
     this.arrival = []
-
-    // Mark components that are part of this collection
-    comps.forEach(function (compId) {
-      checkComponentExistence(compId)
-      collectionsRequieringComp[compId].push(this)
-    }, this)
   }
 
   EntityCollection.prototype.callWithComps = function(ent, func, context, ev) {
@@ -82,33 +62,42 @@
     }, this)
   }
 
-  var getEntityCollection = Kran.getEntityCollection = function(comps) {
+  Kran.prototype.getEntityCollection = function(comps) {
     comps = wrapInArray(comps)
     var key = comps.slice(0).sort().toString()
-    if (entityCollections[key] === undefined) {
-      entityCollections[key] = new EntityCollection(comps)
+    if (this.entityCollections[key] === undefined) {
+      var newCol = this.entityCollections[key] = new EntityCollection(comps)
+
+      // Mark components that are part of this collection
+      comps.forEach(function (compId) {
+        compId = getCompId(compId)
+        checkComponentExistence(this.components, compId)
+        this.components[compId].collectionsRequieringComp.push(newCol)
+      }, this)
     }
-    return entityCollections[key] 
+    return this.entityCollections[key] 
   }
 
   // ***********************************************
   // System
   //
-  var systems = []
-
-  var runGroup = function() {
-    for (var i = 0; i < this.length; i++) {
-      systems[this[i]].run()
-    }
+  var SystemGroup = function () {
+    this.members = []
   }
 
-  var system = Kran.system = function(props) {
-    var id = systems.length
+  SystemGroup.prototype.run = function() {
+    this.members.forEach(function (member) {
+      member.run()
+    })
+  }
+
+  Kran.prototype.system =  function(props) {
+    var id = this.systems.length
     props.run = runSystem
 
     if (props.components !== undefined) {
       props.components = props.components
-      props.coll = getEntityCollection(props.components)
+      props.coll = this.getEntityCollection(props.components)
       if (isFunc(props.arrival)) props.coll.arrival.push(props.arrival)
     }
     if (props.on) {
@@ -118,23 +107,22 @@
       })
     } else {
       // Only systems not listening for events are put in the all group
-      systems.all.push(id)
+      this.systemGroups.all.members.push(props)
     }
     if (props.group) {
-      if (!systems[props.group]) {
-        initGroup(props.group)
+      if (this.systemGroups[props.group] === undefined) {
+        this.systemGroups[props.group] = new SystemGroup(props.group)
       }
-      systems[props.group].push(id)
+      this.systemGroups[props.group].members.push(props)
     }
-    systems.push(props)
+    this.systems.push(props)
   }
 
-  var initGroup = function (name) {
-    systems[name] = []
-    system[name] = runGroup.bind(systems[name])
+  Kran.prototype.run = function(group) {
+    this.systemGroups[group].members.forEach(function (member) {
+      member.run()
+    })
   }
-
-  initGroup('all')
 
   var runSystem = function(ev) {
     if (this.coll !== undefined &&
@@ -154,25 +142,28 @@
   // ***********************************************
   // Entity
   //
-  var Entity = function() {
-    this.comps = new Array(components.length)
+  var Entity = function(compBlueprints) {
+    this.comps = new Array(compBlueprints.length)
+    this.compBlueprints = compBlueprints
     this.belongsTo = new LinkedList()
   }
 
   Entity.prototype.add = function(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
-    compId = processCompId(compId)
+    compId = getCompId(compId)
+    checkComponentExistence(this.compBlueprints, compId)
     if (this.comps[compId] !== undefined) throw new Error("The entity already has the component")
-    if (isFunc(components[compId])) {
-      this.comps[compId] = new components[compId](arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+    var comp = this.compBlueprints[compId].value
+    if (isFunc(comp)) {
+      this.comps[compId] = new comp(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
       this.comps[compId].id = compId
-    } else if (typeof components[compId] === "string") {
+    } else if (typeof comp === "string") {
       var obj = { id: compId }
-      obj[components[compId]] = arg1
+      obj[comp] = arg1
       this.comps[compId] = obj
     } else {
       this.comps[compId] = compId
     }
-    collectionsRequieringComp[compId].forEach(function (coll) {
+    this.compBlueprints[compId].collectionsRequieringComp.forEach(function (coll) {
       if (qualifiesForCollection(this, coll.comps)) {
         addEntityToCollection(this, coll)
       }
@@ -181,28 +172,16 @@
   }
 
   Entity.prototype.get = function(compId) {
-    compId = processCompId(compId)
-    return this.comps[compId]
+    return this.comps[getCompId(compId)]
   }
 
   Entity.prototype.has = function(compId) {
-    compId = processCompId(compId)
-    return this.comps[compId] !== undefined
-  }
-
-  Entity.prototype.get = function(compId) {
-    compId = processCompId(compId)
-    return this.comps[compId]
-  }
-
-  Entity.prototype.has = function(compId) {
-    compId = processCompId(compId)
-    return this.comps[compId] !== undefined
+    return this.comps[getCompId(compId)] !== undefined
   }
 
   Entity.prototype.remove = function(compId) {
-    compId = processCompId(compId)
-    if (this.comps[compId] === undefined) throw new Error("The entity already has the component")
+    compId = getCompId(compId)
+    if (this.comps[compId] === undefined) throw new Error("The entity doesn't have the component")
     this.comps[compId] = undefined
     this.belongsTo.forEach(function (collBelonging, elm) {
       if (!qualifiesForCollection(this, collBelonging.comps)) {
@@ -214,7 +193,7 @@
   }
 
   Entity.prototype.trigger = function (compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
-    compId = processCompId(compId)
+    compId = getCompId(compId)
     this.add(compId, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
     this.remove(compId)
   }
@@ -225,13 +204,13 @@
     })
   }
 
-  var entity = Kran.entity = function () {
-    var ent = new Entity()
-    return ent
+  Kran.prototype.entity = function () {
+    return new Entity(this.components)
   }
 
   var CollectionBelonging = function (comps, entry) {
-    this.comps = comps; this.entry = entry
+    this.comps = comps
+    this.entry = entry
   }
 
   var addEntityToCollection = function(ent, coll) {
@@ -242,14 +221,13 @@
     ent.belongsTo.add(new CollectionBelonging(coll.comps, collEntry))
   }
 
-  var processCompId = function(compId) {
-    if (typeof(compId) === "number") { 
-      return checkComponentExistence(compId)
-    } else if (typeof(compId) == "object" &&
-               compId.id !== undefined) {
-      return checkComponentExistence(compId.id)
+  function getCompId(compId) {
+    if (typeof compId === "number") { 
+      return compId
+    } else if (typeof compId === "object" && typeof compId.id === "number") {
+      return compId.id
     }
-    throw new TypeError("Component " + compId + " does not contain any id")
+    throw new TypeError(compId + " is not a component id or an oject containing an id")
   }
 
   var qualifiesForCollection = function (ent, comps) {
@@ -264,7 +242,7 @@
   // ***********************************************
   // Event system
   //
-  Kran.trigger = function(name, data) {
+  Kran.prototype.trigger = function(name, data) {
     var event = new CustomEvent(name, { detail: data })
     window.dispatchEvent(event)
   }
@@ -273,7 +251,7 @@
   // Helper functions
   //
   var isFunc = function(func) {
-    if (typeof(func) === 'function') {
+    if (typeof func === 'function') {
       return true
     } else {
       return false
