@@ -61,10 +61,12 @@ In an entity system all data/state is stored inside _components_. Components
 are tiny bits of tightly related data. It's a property/characteristic that
 a thing can possess. That could be a position component, a shape component
 or a color component. In Kran a component can be defined by passing a
-constructor function to `Kran.component`:
+constructor function to `kran.component` where `kran` is an instance of `Kran`:
 
 ```javascript
-var velocity = Kran.component(function (x, y) {
+var kran = new Kran()
+
+var velocity = kran.component(function (x, y) {
   this.x = x || 0
   this.y = y || 0
 }
@@ -73,11 +75,11 @@ var velocity = Kran.component(function (x, y) {
 Components with just one property can be created using the shorthand syntax
 shown below
 ```javascript
-var weight = component("val")
+var weight = kran.component("val")
 ```
 This is the same as doing
 ```javascript
-var weight = component(function (weight) {
+var weight = kran.component(function (weight) {
   this.val = weight
 })
 ```
@@ -89,7 +91,7 @@ a _system_. Systems is were the logic that would be methods in OOP is put in an
 entity system.
 
 ```javascript
-system({ // Creates a new system that accelerates objects with weight towards the ground
+kran.system({ // Creates a new system that accelerates objects with weight towards the ground
   // The system is interested in entities with velocity and weight components
   components: [velocity, weight],
   // When the system runs this function will be called for each entity that has the
@@ -113,23 +115,23 @@ components constructor function. It returns the entity to allow for chaining.
 
 ```javascript
 // Creates a new entity, adds two components to it and initializes them
-Kran.entity().add(velocity, 100, 0).add(weight, 10)
+kran.entity().add(velocity, 100, 0).add(weight, 10)
 // This component is heavy and heading right towards the ground, might be a meteor ;)
-Kran.entity().add(velocity, 0, -10000).add(weight, 84782)
+kran.entity().add(velocity, 0, -10000).add(weight, 84782)
 ```
 
 Now we set up the game loop. This is what a simple game loop might look like in
 Kran (actually this is exactly what the demo game's loop look like):
 ```javascript
 var gameLoop = function() {      
-  system.all()
+  kran.run("all")
   requestAnimationFrame(gameLoop)
 }  
 ```
 The above simply runs all systems in order of creation. If more control is needed
 systems can be put into groups and ran like this:
 ```javascript
-system.groupName()
+kran.run("group-name")
 ```
 That's all for now. Kran is still in heavy development and more documentation
 will be created in the future. As of now take a look at the 
@@ -141,15 +143,23 @@ API documentation
 _Note:_ The API documentation is still very rough and should be considered a
 draft.
 
+### The Kran object
+A Kran "universe" is created by instantiating the Kran object.
+```javascript
+var kran = new Kran()
+```
+This "univers" contains a seperate collection of components, systems and
+entities.
+
 ### Creating components
-Components are created using the `Kran.component` function. The function
-supports three different ways of creating components. Either by passing it a
-constructor function, a string or undefined.
+Components are created with the `component` function on a Kran instance. The
+function supports three different ways of creating components. Either by
+passing it a constructor function, a string or undefined.
 
 The basic way of creating components is by passing `component` a constructor
 function.
 ```javascript
-Kran.component(constr)
+kran.component(constr)
 ```
 
 Here `constr` is a constructor function that initializes the component. Since
@@ -161,7 +171,7 @@ added to an entity.
 
 _Example:_
 ```javascript
-var pos = Kran.component(function (x, y) {
+var pos = kran.component(function (x, y) {
   this.x = x
   this.y = y
 })
@@ -171,11 +181,11 @@ For creating a component with only one property `component` provides a
 convenient shorthand syntax. Simply call it with the name of the single
 component as a string.
 ```javascript
-Kran.component(propertyName)
+kran.component(propertyName)
 ```
 Here `propertyName` is a string and the above is identical to.
 ```javascript
-Kran.component(function (property) {
+kran.component(function (property) {
   this.propertyName = property
 })
 ```
@@ -183,20 +193,20 @@ Kran.component(function (property) {
 If one needs a component where only its presence if of concern (i.e. it doesn't
 contain any changing data) `component` can be called with no arguments
 ```javascript
-Kran.component()
+kran.component()
 ```
 This creates a component that takes no initialization arguments and contains no
 properties. Kran will store it as a boolean internally.
 
 ### Registering systems
 
-Sysems are registered by calling `Kran.system` with an object describing the
+Sysems are registered by calling `system` method with an object describing the
 system.
 ```javascript
-Kran.system(systemObj)
+kran.system(systemObj)
 ```
 
-`systemObj` is an object and can contain the following properties
+A `systemObj` is an object and can contain the following properties
 
 * `component`: A component id or an array of component ids that the function
 depends on.
@@ -215,31 +225,38 @@ When systems groups are created a function with the same name as the group will
 be attached to `kran.system`. It allows running all the systems in the group
 in order of creation.
 ```javascript
-kran.system.groupName()
+kran.run("group-name")
 ```
 
-Alternatively a all systems except those listening to events gets added to a
-special group named `all`. Thus all functions can be run with
+Alternatively all systems except those listening to global events gets added to
+a special group named `all`. Thus all systems can be run with
 ```javascript
-kran.system.all()
+kran.run("all")
 ```
 
 ### Creating entities
-A new entity is created by calling `Kran.entity`. The function takes no
-arguments. It returns an entity object.
+A new entity is created by calling the `entity` method on a Kran instance. The
+function takes no arguments. It returns an entity object.
 
 ### Composing entities
 *Example:*
 ```javascript
-entity().add(pos, x, y).add(color, r, g, b, a).add(firing, interval, damage)
+kran.entity().add(pos, x, y).add(color, r, g, b, a).add(firing, interval, damage)
 ```
 
 ### Working with entity collections
+Kran has a concept of entity collections. These are collections of entities
+containing a given set of components. Kran will update these collections when
+needed as components are added to and removed from entities. Internally these
+entity collections are used by systems but they have other uses and thus they
+are also exposed in the API.
+
+*Example:*
 ```javascript
-Kran.getEntityCollection([comp1, comp2, comp3])
+kran.getEntityCollection([comp1, comp2, comp3])
 ```
 
-### Liked list
+### Linked list
 
 ```javascript
 new kran.LinkedList()
@@ -252,6 +269,7 @@ linkedListInstance.add(data)
 To do
 =====
 
+* Improve documentation
 * Add benchmark suite
 * Add object pooling for internal and external usage
 * More example games
