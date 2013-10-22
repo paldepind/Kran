@@ -91,14 +91,13 @@
     })
   }
 
-  Kran.prototype.system =  function(props) {
+  Kran.prototype.system = function(props) {
     var id = this.systems.length
     props.run = runSystem
 
     if (props.components !== undefined) {
-      props.components = props.components
-      props.coll = this.getEntityCollection(props.components)
-      if (isFunc(props.arrival)) props.coll.arrival.push(props.arrival)
+      props.collection = this.getEntityCollection(props.components)
+      if (isFunc(props.arrival)) props.collection.arrival.push(props.arrival)
     }
     if (props.on) {
       props.on = wrapInArray(props.on)
@@ -125,8 +124,8 @@
   }
 
   var runSystem = function(ev) {
-    if (this.coll !== undefined &&
-        this.coll.ents.length === 0) {
+    if (this.collection !== undefined &&
+        this.collection.ents.length === 0) {
       return
     }
     if (ev && ev instanceof CustomEvent) {
@@ -134,7 +133,7 @@
     }
     if (isFunc(this.pre)) this.pre(ev)
     if (isFunc(this.every)) {
-      this.coll.forEachWithComps(this.every, this, ev)
+      this.collection.forEachWithComps(this.every, this, ev)
     }
     if (isFunc(this.post)) this.post(ev)
   }
