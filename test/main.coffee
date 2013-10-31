@@ -156,6 +156,18 @@ describe 'Kran:', ->
       kran.run('all')
       spy.should.have.been.calledOnce
 
+    it 'calls systems without boolean components', ->
+      comp = component()
+      comp2 = component('val')
+      system({
+        components: [comp, comp2],
+        every: (comp2, ent, nope) ->
+          comp2.val.should.equal('foo')
+          should.not.exist(nope)
+      })
+      entity().add(comp).add(comp2, 'foo')
+      kran.run('all')
+
   describe 'entity', ->
     it 'allows for creation of new entities', ->
       entity().should.be.an('object')

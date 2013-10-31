@@ -48,11 +48,15 @@
   }
 
   EntityCollection.prototype.callWithComps = function(ent, func, context, ev) {
-    if (ev) this.buffer[0] = ev
+    var offset = 0
+    if (ev) this.buffer[offset++] = ev
     for (var i = 0; i < this.comps.length; i++) {
-      this.buffer[i + (ev ? 1 : 0)] = ent.comps[this.comps[i]]
+      // Boolean components are equal to their id
+      if (ent.comps[this.comps[i]] !== this.comps[i]) {
+        this.buffer[offset++] = ent.comps[this.comps[i]]
+      }
     }
-    this.buffer[i + (ev ? 1 : 0)] = ent
+    this.buffer[offset] = ent
     func.apply(context, this.buffer)
   }
 
