@@ -108,7 +108,7 @@
   })
   system({ // Create explosion
     components: [exploded, circle],
-    arrival: function(exploded, circle) {
+    arrival: function(circle) {
       var x = circle.x, y = circle.y
       entity().add(circle, x, y, 10).add(color, 255, 80, 0).add(damage, 10).add(explosion)
               .add(disappering, 20).add(growing, 8).add(weight, Infinity)
@@ -183,7 +183,7 @@
   })
   system({ // Makes the player take damage from monsters
     components: [collided, circle, health, player],
-    arrival: function(collided, circle, health, player, ent) {
+    arrival: function(collided, circle, health, ent) {
       if (collided.with.has(monster)) {
         dealDamage(health, circle, collided.with.get(damage), ent)
       }
