@@ -238,11 +238,53 @@ kran.run("all")
 A new entity is created by calling the `entity` method on a Kran instance. The
 function takes no arguments. It returns an entity object.
 
-### Composing entities
 *Example:*
 ```javascript
-kran.entity().add(pos, x, y).add(color, r, g, b, a).add(firing, interval, damage)
+var ent = kran.entity()
 ```
+`ent` is now an entity object with no components. I.e. it's an empty container.
+
+### Composing entities
+Composing entities is easy and consice. All the entity methods returns themselves
+to allow for chaining.
+*Example:*
+```javascript
+ent.add(fleeing, speed).remove(elastic).add(firing, interval, damage)
+```
+
+### Adding components
+Components are added with the `Entity#add` method. The first argument to which
+is a component followed by a variable amount of arguments that will be passed
+along to the components constructor function if any.
+*Example:*
+```javascript
+entity().add(componentId, arg1, arg2, arg3)
+```
+
+### Removing components
+Components are removed with the `Entity#remove` method.
+*Example:*
+```javascript
+hero.remove(awesomePerk)
+```
+
+### Triggering components
+The `Entity#trigger` method is a convenience method for adding a component
+and immediatly removing it again.
+
+This
+```javascript
+tree.trigger(leavesDropped, 4)
+```
+is equivalent to this:
+```javascript
+tree.add(leavesDropped, 4).remove(leavesDropped)
+```
+
+The former is more consice and more clearly communicates the intention of
+the addition and removal of the component. With this simple function and the
+`arrival` hook in systems Kran implements gets and integrated event system
+for free.
 
 ### Working with entity collections
 Kran has a concept of entity collections. These are collections of entities
