@@ -208,7 +208,7 @@ kran.system(systemObj)
 
 A `systemObj` is an object and can contain the following properties
 
-* `component`: A component id or an array of component ids that the function
+* `components`: A component id or an array of component ids that the function
 depends on.
 * `pre`: A function called once before the `every` function when the system is
 run.
