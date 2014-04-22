@@ -2,7 +2,7 @@
   "name": "kran",
   "title": "Kran",
   "description": "A flexible, convenient, simple and efficient architecture suitable for game development.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/paldepind/Kran",
   "keywords": ["entity system", "game development", "library"],
   "repository": {

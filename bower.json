@@ -1,0 +1,17 @@
+{
+  "name": "kran",
+  "description": "A flexible, convenient, simple and efficient architecture suitable for game development.",
+  "version": "0.0.2",
+  "main": "kran.js",
+  "ignore": [
+    "examples/*"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "coffee-script": "*",
+    "mocha": "*",
+    "chai": "*",
+    "sinon": "*",
+    "sinon-chai": "*"
+  }
+}
