@@ -11,6 +11,12 @@ user. Kran can without problems be used in conjunction with other libraries.
 
 _Note_: Kran is under heavy development, everything is work in progress.
 
+# cljan
+If you're interested in Clojure and/or functional programming take a look at
+[VincentToups](https://github.com/VincentToups)' awesome
+[Cljan](https://github.com/VincentToups/cljan). A game-engine independent,
+purely functional entity component system inspired by Kran.
+
 Demo game
 =========
 [Try the crazy demo game with explosions and blood!]
